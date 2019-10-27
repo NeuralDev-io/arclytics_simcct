@@ -1,13 +1,15 @@
 openapi: 3.0.2
 info:
-  version: 0.4.0
-  title: "Arclytics Sim API"
-  description: "Swagger spec for documenting the users and simulation service"
+  version: 2.0.0
+  title: "Arclytics SimCCT API"
+  description: "Swagger OpenAPI spec 3 for documenting the simcct and arclytics Flask API microservices"
 
 
 servers:
-  - description: "Arclytics Flask Server"
+  - description: "SimCCT Flask Server"
     url: 'http://localhost:8000'
+  - description: "Arclytics Flask Server"
+    url: 'http://localhost:8001'
 
 
 paths:
@@ -41,22 +43,9 @@ paths:
       summary: "Readiness probe for GCP Ingress."
       tags:
         - Users
-      requestBody:
-        description: "RequestBody for health status"
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                Connection:
-                  type: string
-                  format: "Connection"
-                  example: "Close"
-                Keep-Alive:
-                  type: string
-                  format: "Keep-Alive"
-                  example: "timeout=0"
+      responses:
+        200:
+          description: "Empty response."
 
   /v1/sim/users:
     get:
@@ -64,7 +53,7 @@ paths:
       tags:
         - Users
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "A list of User objects"
@@ -230,7 +219,7 @@ paths:
       tags:
         - Users
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "Returns the user object successfully."
@@ -321,7 +310,7 @@ paths:
       tags:
         - Users
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "The data provided to update the user's details."
         content:
@@ -495,15 +484,15 @@ paths:
               examples:
                 'Internal Server Error':
                   value:
-                  status: "fail"
-                  message: "No JWT stored in Session."
+                    status: "fail"
+                    message: "No JWT stored in Session."
   /v1/sim/user/profile:
     post:
       summary: "Create the User's profile details the first time they complete it."
       tags:
         - Users
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "User details to add"
         required: true
@@ -626,7 +615,7 @@ paths:
       tags:
         - Users
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "Successfully returned user."
@@ -634,8 +623,6 @@ paths:
             application/json:
               schema:
                 type: object
-                properties:
-                  type: string
               example:
                 status: "success"
                 query:
@@ -764,7 +751,7 @@ paths:
       tags:
         - Users
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "Successfully returned user."
@@ -772,8 +759,6 @@ paths:
             application/json:
               schema:
                 type: object
-                properties:
-                  type: string
               example:
                 status: "success"
                 sort:
@@ -895,7 +880,7 @@ paths:
       tags:
         - Users
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "Successfully returned the user's last Alloy and Configurations used."
@@ -1000,7 +985,7 @@ paths:
       tags:
         - Users
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "Save user's last Alloy and Configuration."
         required: true
@@ -1185,7 +1170,7 @@ paths:
       tags:
         - Users
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "Link to be generated to share configurations."
         required: true
@@ -1336,7 +1321,7 @@ paths:
       tags:
         - Users
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "Email link to be generated to share configurations."
         required: true
@@ -1556,7 +1541,7 @@ paths:
       tags:
         - Save Simulation
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "Successfully logged in"
@@ -1664,7 +1649,7 @@ paths:
       tags:
         - Save Simulation
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "List of configuration and alloy"
         required: true
@@ -1839,7 +1824,7 @@ paths:
       tags:
         - Save Simulation
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "Successfully retrieved simulation."
@@ -1954,7 +1939,7 @@ paths:
       tags:
         - Save Simulation
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         202:
           description: "Delete saved simulation"
@@ -2282,7 +2267,7 @@ paths:
       tags:
         - Auth
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "The user's token is currently valid."
@@ -2381,7 +2366,7 @@ paths:
       tags:
         - Auth
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         '202':
           description: "Successfully logged out"
@@ -2595,7 +2580,7 @@ paths:
       tags:
         - Auth
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "The password entered by user."
         content:
@@ -2714,7 +2699,7 @@ paths:
       tags:
         - Auth
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "The password entered by user."
         content:
@@ -2788,7 +2773,7 @@ paths:
       tags:
         - Auth
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "Request to change email."
         content:
@@ -2906,7 +2891,7 @@ paths:
       tags:
         - Auth
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "Confirmation email sent."
@@ -3043,7 +3028,7 @@ paths:
       tags:
         - Auth
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "Request to resend email."
         content:
@@ -3132,7 +3117,7 @@ paths:
     post:
       summary: "Create an admin account."
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       tags:
         - Admin
       requestBody:
@@ -3344,7 +3329,7 @@ paths:
     put:
       summary: "Disable a User's account if an Admin has requested."
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       tags:
         - Admin
       requestBody:
@@ -3469,7 +3454,7 @@ paths:
     get:
       summary: "Send confirmation to disable user account if an Admin has requested."
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       tags:
         - Admin
       responses:
@@ -3500,7 +3485,7 @@ paths:
     put:
       summary: "Disable a User's account if an Admin has requested."
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       tags:
         - Admin
       requestBody:
@@ -4480,7 +4465,7 @@ paths:
       tags:
         - Alloys
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "The alloy to save."
         required: true
@@ -4633,7 +4618,7 @@ paths:
       tags:
         - Alloys
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "Return the User's Alloys database successfully."
@@ -4751,7 +4736,7 @@ paths:
       tags:
         - Alloys
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "Return the User's alloy detail successfully."
@@ -4905,7 +4890,7 @@ paths:
       tags:
         - Alloys
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "The Alloy details to partially update."
         required: true
@@ -5212,7 +5197,7 @@ paths:
       tags:
         - Alloys
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         202:
           description: "An alloy has successfully been deleted."
@@ -5330,7 +5315,7 @@ paths:
     post:
       summary: "Initiate an Alloy and Configuration Session store."
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       tags:
         - Configurations
       requestBody:
@@ -5542,7 +5527,7 @@ paths:
       tags:
         - Configurations
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -5713,7 +5698,7 @@ paths:
       tags:
         - Configurations
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -5883,7 +5868,7 @@ paths:
       tags:
         - Configurations
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -6053,7 +6038,7 @@ paths:
     post:
       summary: "Run the simulation and get the results back."
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       tags:
         - Simulation
       requestBody:
@@ -6240,7 +6225,7 @@ paths:
     post:
       summary: "Run the Ae3Simulation and get the results back."
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       tags:
         - Ae3Equilibrium
       requestBody:
@@ -6421,7 +6406,7 @@ paths:
       tags:
         - Rating
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "RequestBody needed to make rating."
         required: true
@@ -6538,7 +6523,7 @@ paths:
       tags:
         - Rating
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "The User rating has been successfully saved."
@@ -6546,8 +6531,6 @@ paths:
             application/json:
               schema:
                 type: object
-                properties:
-                  type: string
               example:
                 sort:
                 limit:
@@ -6661,7 +6644,7 @@ paths:
       tags:
         - Rating
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         description: "RequestBody needed to make feedback."
         required: true
@@ -6782,7 +6765,7 @@ paths:
       tags:
         - Rating
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "Successfully returned feedback."
@@ -6790,8 +6773,6 @@ paths:
             application/json:
               schema:
                 type: object
-                properties:
-                  type: string
               example:
                 status: "success"
                 query:
@@ -6911,7 +6892,7 @@ paths:
       tags:
         - Rating
       security:
-        - bearerAuth: []
+        - cookieAuth: []
       responses:
         200:
           description: "Successfully subscribed."
@@ -6919,8 +6900,6 @@ paths:
             application/json:
               schema:
                 type: object
-                properties:
-                  type: string
               examples:
                 'Subscribed':
                   value:
@@ -7034,9 +7013,10 @@ paths:
 
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: SESSION_TOKEN
   schemas:
     isValid:
       properties:
@@ -7657,7 +7637,7 @@ tags:
   - name: Admin
     description: Endpoints that are used by an Administrator.
   - name: Save Simulation
-    description: "Endpoints that manage sessions."
+    description: "Endpoints that allow access to a user's saved simulations."
   - name: Alloys
     description: "Endpoints that expose the full CRUD interface for Alloys."
   - name: Configurations
@@ -7667,4 +7647,4 @@ tags:
   - name: Ae3Equilibrium
     description: "Endpoints that manages Ae3Equilibrium simulation."
   - name: Rating
-    description: "Endpoints that manages rating."
+    description: "Endpoints that manages ratings and feedback."

@@ -1,5 +1,5 @@
 # Arclytics SimCCT API
-Swagger spec for documenting the users and simulation service
+Swagger OpenAPI spec 3 for documenting the simcct and arclytics Flask API microservices
 
 ## Version: 2.0.0
 
@@ -23,6 +23,12 @@ Just a sanity check
 
 Readiness probe for GCP Ingress.
 
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | Empty response. |
+
 ### /v1/sim/users
 
 #### GET
@@ -45,7 +51,7 @@ Returns all users
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/user
 
@@ -68,7 +74,7 @@ Returns a user based on a single user ID
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 #### PATCH
 ##### Summary:
@@ -91,7 +97,7 @@ Update the User's details.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/user/profile
 
@@ -115,7 +121,55 @@ Create the User's profile details the first time they complete it.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
+
+### /v1/sim/users/query
+
+#### GET
+##### Summary:
+
+Return all users based on a query.
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | Successfully returned user. |
+| 400 | An invalid payload has been sent with the request. |
+| 401 | The user is not authenticated to perform this request. |
+| 403 | Unauthorized access. |
+| 404 | The user cannot be found. |
+| 500 | An internal server error has occurred. |
+
+##### Security
+
+| Security Schema | Scopes |
+| --- | --- |
+| cookieAuth | |
+
+### /v1/sim/users/search
+
+#### GET
+##### Summary:
+
+Allows administrators to search the database for a user/users
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | Successfully returned user. |
+| 400 | An invalid payload has been sent with the request. |
+| 401 | The user is not authenticated to perform this request. |
+| 403 | Unauthorized access. |
+| 404 | The user cannot be found. |
+| 500 | An internal server error has occurred. |
+
+##### Security
+
+| Security Schema | Scopes |
+| --- | --- |
+| cookieAuth | |
 
 ### /v1/sim/user/last/simulation
 
@@ -138,7 +192,7 @@ Returns the user's last Alloy and Configurations used, and CCT/TTT results (if a
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 #### POST
 ##### Summary:
@@ -160,7 +214,7 @@ Save user's last Alloy and Configurations used, and CCT/TTT results
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/user/share/simulation/link
 
@@ -184,7 +238,7 @@ Generate link that can be used to share configurations.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/user/share/simulation/email
 
@@ -208,7 +262,7 @@ Generate email that can be used to share configurations.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/user/share/simulation/view/<token>
 
@@ -246,7 +300,7 @@ Retrieve the list of Configurations saved in the User's document.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 #### POST
 ##### Summary:
@@ -268,7 +322,7 @@ Save the list of Configuration.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/user/simulation/{id}
 
@@ -292,7 +346,7 @@ Retrieve the list of Configurations saved in the User's document.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 #### DELETE
 ##### Summary:
@@ -314,7 +368,7 @@ Delete a saved simulation from saved_simulation.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/auth/register
 
@@ -366,7 +420,7 @@ Returns the logged in user's status
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/auth/logout
 
@@ -389,7 +443,7 @@ Logs a user out
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/reset/password
 
@@ -443,7 +497,7 @@ An endpoint for password check.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/auth/password/change
 
@@ -464,7 +518,7 @@ An endpoint for changing password.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/auth/email/change
 
@@ -488,7 +542,7 @@ An endpoint for changing email.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/confirm/resend
 
@@ -512,7 +566,7 @@ An endpoint for sending confirmation email.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/confirm/<token>
 
@@ -545,7 +599,7 @@ An endpoint for resending confirmation email.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/confirmadmin/<token>
 
@@ -595,7 +649,7 @@ Create an admin account.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/admin/create/cancel/<token>
 
@@ -645,7 +699,7 @@ Disable a User's account if an Admin has requested.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/disable/user/confirm/<token>
 
@@ -664,7 +718,7 @@ Send confirmation to disable user account if an Admin has requested.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/enable/user
 
@@ -688,7 +742,7 @@ Disable a User's account if an Admin has requested.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/global/alloys
 
@@ -814,7 +868,7 @@ Save an alloy to the User's database.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 #### GET
 ##### Summary:
@@ -835,7 +889,7 @@ We get the list of User's alloys stored in their document.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/user/alloys/{id}
 
@@ -860,7 +914,7 @@ We get the requested alloy from the parameter's ObjectId.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 #### PUT
 ##### Summary:
@@ -882,7 +936,7 @@ Update an alloy to the User's database.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 #### DELETE
 ##### Summary:
@@ -905,9 +959,9 @@ Delete an alloy from the user's database.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
-### /alloys/update
+### /v1/sim/alloys/update
 
 #### POST
 ##### Summary:
@@ -918,94 +972,25 @@ Initiate an Alloy and Configuration Session store.
 
 | Code | Description |
 | ---- | ----------- |
-| 200 | Update composition. |
-| 201 | The alloy and its compositions was successfully updated and stored in the Session for the user. An initial Configurations with default values were set. |
-| 400 | An invalid payload has been sent with the request. |
-| 401 | Unauthorized access to the endpoint. |
+| 200 | The alloy and its compositions was successfully updated and stored in the Session for the user. An initial Configurations with default values were set. |
+| 400 | An invalid request has been made. |
+| 401 | The user is not authenticated to perform this request. |
+| 403 | Unauthorized access. |
+| 404 | The user cannot be found. |
 | 500 | An internal server error has occurred. |
 
 ##### Security
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
-#### PATCH
+### /v1/sim/configs/ms
+
+#### POST
 ##### Summary:
 
-Update the Alloy compositions in Session store for the user.
-
-##### Responses
-
-| Code | Description |
-| ---- | ----------- |
-| 200 | The request was success fully completed meaning the Session store has been updated with the new alloy compositions and if any limit values need to be auto calculated, the system will do so and return the newly updated values in a `data` object. |
-| 400 | An invalid payload has been sent with the request. |
-| 401 | Unauthorized access to the endpoint. |
-| 500 | An internal server error has occurred. |
-
-##### Security
-
-| Security Schema | Scopes |
-| --- | --- |
-| bearerAuth | |
-
-### /configs/method/update
-
-#### PUT
-##### Summary:
-
-Update the method used in the Session store of the current user.
-
-##### Responses
-
-| Code | Description |
-| ---- | ----------- |
-| 200 | Method changed successfully for the current user. |
-| 400 | Invalid payload sent in the request. |
-| 401 | Unauthorized access to the endpoint. |
-| 404 | Cannot find a current Session store for the user. |
-| 500 | An internal server error has occurred. |
-
-##### Security
-
-| Security Schema | Scopes |
-| --- | --- |
-| bearerAuth | |
-
-### /configs/update
-
-#### PATCH
-##### Summary:
-
-Update the Session store of the set configurations for the current user.
-
-##### Description:
-
-These configurations are those not including the transformation temperatures that we consider part of the setup. It includes grain size, nucleation start, nucleation finish, start temperatures, and CCT cooling rate.
-
-##### Responses
-
-| Code | Description |
-| ---- | ----------- |
-| 202 | The configurations were updated successfully and no content returned. |
-| 400 | Invalid payload sent in the request. |
-| 401 | Unauthorized access to the endpoint. |
-| 404 | No content can be found to update. |
-| 500 | An internal server error has occurred. |
-
-##### Security
-
-| Security Schema | Scopes |
-| --- | --- |
-| bearerAuth | |
-
-### /configs/ms
-
-#### GET
-##### Summary:
-
-Update the auto calculate for MS and MS Rate Parameter and return the new values.
+Initiate calculation for MS.
 
 ##### Responses
 
@@ -1013,42 +998,23 @@ Update the auto calculate for MS and MS Rate Parameter and return the new values
 | ---- | ----------- |
 | 200 | The auto calculate for MS store has been updated and returned. |
 | 400 | An invalid request has been made. |
-| 401 | Unauthorized access to the endpoint. |
+| 401 | The user is not authenticated to perform this request. |
+| 403 | Unauthorized access. |
+| 404 | The user cannot be found. |
 | 500 | An internal server error has occurred. |
 
 ##### Security
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
-#### PUT
+### /v1/sim/configs/bs
+
+#### POST
 ##### Summary:
 
-We update the server session store of MS, MS Rate Parameter and BS
-
-##### Responses
-
-| Code | Description |
-| ---- | ----------- |
-| 202 | The BS, MS and MS Rate Parameter temperatures were updated and no content returned. |
-| 400 | An invalid payload was sent in the request. |
-| 401 | Unauthorized access to the endpoint. |
-| 404 | No previous session configurations was found for the user. |
-| 500 | An internal server error has occurred. |
-
-##### Security
-
-| Security Schema | Scopes |
-| --- | --- |
-| bearerAuth | |
-
-### /configs/bs
-
-#### GET
-##### Summary:
-
-Update the auto calculate for BS and return the new values.
+Initiate calculation for BS.
 
 ##### Responses
 
@@ -1056,78 +1022,40 @@ Update the auto calculate for BS and return the new values.
 | ---- | ----------- |
 | 200 | The auto calculate for BS store has been updated and returned. |
 | 400 | An invalid request has been made. |
-| 401 | Unauthorized access to the endpoint. |
+| 401 | The user is not authenticated to perform this request. |
+| 403 | Unauthorized access. |
+| 404 | The user cannot be found. |
 | 500 | An internal server error has occurred. |
 
 ##### Security
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
-#### PUT
+### /v1/sim/configs/ae
+
+#### POST
 ##### Summary:
 
-We update the server session store of BS
+Initiate calculation for Ae.
 
 ##### Responses
 
 | Code | Description |
 | ---- | ----------- |
-| 202 | The BS, MS and MS Rate Parameter temperatures were updated and no content returned. |
-| 400 | An invalid payload was sent in the request. |
-| 401 | Unauthorized access to the endpoint. |
-| 404 | No previous session configurations was found for the user. |
-| 500 | An internal server error has occurred. |
-
-##### Security
-
-| Security Schema | Scopes |
-| --- | --- |
-| bearerAuth | |
-
-### /configs/ae
-
-#### GET
-##### Summary:
-
-Update the auto calculate for Ae1 and Ae3 and return the new values.
-
-##### Responses
-
-| Code | Description |
-| ---- | ----------- |
-| 200 | The auto calculate for Ae1 and Ae3 store has been updated and returned. |
+| 200 | The auto calculate for Ae store has been updated and returned. |
 | 400 | An invalid request has been made. |
-| 401 | Unauthorized access to the endpoint. |
+| 401 | The user is not authenticated to perform this request. |
+| 403 | Unauthorized access. |
+| 404 | The user cannot be found. |
 | 500 | An internal server error has occurred. |
 
 ##### Security
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
-
-#### PUT
-##### Summary:
-
-We update the server session store of Ae1 and Ae3
-
-##### Responses
-
-| Code | Description |
-| ---- | ----------- |
-| 202 | The Ae1 and Ae3 temperatures were updated. |
-| 400 | An invalid payload was sent in the request. |
-| 401 | Unauthorized access to the endpoint. |
-| 404 | No previous session configurations was found for the user. |
-| 500 | An internal server error has occurred. |
-
-##### Security
-
-| Security Schema | Scopes |
-| --- | --- |
-| bearerAuth | |
+| cookieAuth | |
 
 ### /v1/sim/simulate
 
@@ -1151,4 +1079,146 @@ Run the simulation and get the results back.
 
 | Security Schema | Scopes |
 | --- | --- |
-| bearerAuth | |
+| cookieAuth | |
+
+### /v1/sim/ae3equilibrium
+
+#### POST
+##### Summary:
+
+Run the Ae3Simulation and get the results back.
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | Ae3 Equilibrium ran successfully. |
+| 400 | An invalid request has been made. |
+| 401 | The user is not authenticated to perform this request. |
+| 403 | Unauthorized access. |
+| 404 | The user cannot be found. |
+| 500 | An internal server error has occurred. |
+
+##### Security
+
+| Security Schema | Scopes |
+| --- | --- |
+| cookieAuth | |
+
+### /v1/sim/user/rating
+
+#### POST
+##### Summary:
+
+Create ratings.
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | The User rating has been successfully saved. |
+| 400 | An invalid payload has been sent with the request. |
+| 401 | The user is not authenticated to perform this request. |
+| 403 | Unauthorized access. |
+| 404 | The user cannot be found. |
+| 500 | An internal server error has occurred. |
+
+##### Security
+
+| Security Schema | Scopes |
+| --- | --- |
+| cookieAuth | |
+
+### /v1/sim/user/feedback
+
+#### GET
+##### Summary:
+
+Return a list of feedback based of get request from Admin
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | The User rating has been successfully saved. |
+| 400 | An invalid payload has been sent with the request. |
+| 401 | The user is not authenticated to perform this request. |
+| 403 | Unauthorized access. |
+| 404 | The user cannot be found. |
+| 500 | An internal server error has occurred. |
+
+##### Security
+
+| Security Schema | Scopes |
+| --- | --- |
+| cookieAuth | |
+
+#### POST
+##### Summary:
+
+Method to post feedback.
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | The User rating has been successfully saved. |
+| 400 | An invalid payload has been sent with the request. |
+| 401 | The user is not authenticated to perform this request. |
+| 403 | Unauthorized access. |
+| 404 | The user cannot be found. |
+| 500 | An internal server error has occurred. |
+
+##### Security
+
+| Security Schema | Scopes |
+| --- | --- |
+| cookieAuth | |
+
+### /v1/sim/user/feedback/search
+
+#### GET
+##### Summary:
+
+Return a list of feedback based of get request from Admin
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | Successfully returned feedback. |
+| 400 | An invalid payload has been sent with the request. |
+| 401 | The user is not authenticated to perform this request. |
+| 403 | Unauthorized access. |
+| 404 | The user cannot be found. |
+| 500 | An internal server error has occurred. |
+
+##### Security
+
+| Security Schema | Scopes |
+| --- | --- |
+| cookieAuth | |
+
+### /v1/sim/user/feedback/list/subscribe
+
+#### POST
+##### Summary:
+
+Route for Admins to subscribe to the feedback mailing list.
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | Successfully subscribed. |
+| 400 | An invalid payload has been sent with the request. |
+| 401 | The user is not authenticated to perform this request. |
+| 403 | Unauthorized access. |
+| 404 | The user cannot be found. |
+| 500 | An internal server error has occurred. |
+
+##### Security
+
+| Security Schema | Scopes |
+| --- | --- |
+| cookieAuth | |

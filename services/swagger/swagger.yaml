@@ -57,6 +57,7 @@ paths:
                   type: string
                   format: "Keep-Alive"
                   example: "timeout=0"
+
   /v1/sim/users:
     get:
       summary: "Returns all users"
@@ -619,6 +620,275 @@ paths:
                   value:
                     status: "fail"
                     message: "No JWT stored in Session."
+  /v1/sim/users/query:
+    get:
+      summary: "Return all users based on a query."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Successfully returned user."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: string
+              example:
+                status: "success"
+                query:
+                sort:
+                limit:
+                page: 0
+                skip:
+                total_pages: 1
+                data:
+                n_results: 213
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Parameters':
+                  value:
+                    status: "fail"
+                    message: "Invalid parameters."
+                'Invalid Page Parameters':
+                  value:
+                    status: "fail"
+                    message: "Required page parameter."
+                'No Parameters':
+                  value:
+                    status: "fail"
+                    message: "No query parameters provided."
+                'Invalid Limit':
+                  value:
+                    status: "fail"
+                    message: "Invalid limit parameter."
+                'Limit Must Be Positive':
+                  value:
+                    status: "fail"
+                    message: "Limit must be a positive int."
+                'Invalid Page':
+                  value:
+                    status: "fail"
+                    message: "Invalid page parameter."
+                'Invlid Sort':
+                  value:
+                    status: "fail"
+                    message: "Sort value is invalid."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Not authorized':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'No Results':
+                  value:
+                    status: "fail"
+                    message: "No results found."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/users/search:
+    get:
+      summary: "Allows administrators to search the database for a user/users"
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Successfully returned user."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: string
+              example:
+                status: "success"
+                sort:
+                skip:
+                page: 0
+                limit:
+                current_page:
+                total_pages: 1
+                n_results: 213
+                data:
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Parameters':
+                  value:
+                    status: "fail"
+                    message: "Invalid parameters."
+                'Invalid Page Parameters':
+                  value:
+                    status: "fail"
+                    message: "Required page parameter."
+                'Invalid Limit':
+                  value:
+                    status: "fail"
+                    message: "Invalid limit parameter."
+                'Limit Must Be Positive':
+                  value:
+                    status: "fail"
+                    message: "Limit must be a positive int."
+                'Invlid Sort':
+                  value:
+                    status: "fail"
+                    message: "Sort value is invalid."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Not authorized':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'No Results':
+                  value:
+                    status: "fail"
+                    message: "No results found."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+
   /v1/sim/user/last/simulation:
     get:
       summary: "Returns the user's last Alloy and Configurations used, and CCT/TTT results (if any)"
@@ -765,7 +1035,7 @@ paths:
                       last_configurations:
                         $ref: '#/components/schemas/Configurations'
                       last_alloy_store:
-                        $ref: '#/components/schemas/Alloy'
+                        $ref: '#/components/schemas/Alloy Store'
               examples:
                 'Valid':
                   value:
@@ -775,7 +1045,7 @@ paths:
                       last_configurations:
                         $ref: '#/components/examples/configurationsExample'
                       last_alloy_store:
-                        $ref: '#/components/examples/Alloy Store'
+                        $ref: '#/components/schemas/Alloy Store'
                       last_simulation_results:
                         $ref: '#/components/schemas/Saved Simulation'
         400:
@@ -4937,7 +5207,6 @@ paths:
                   value:
                     status: "fail"
                     message: "Failed to update alloy."
-
     delete:
       summary: "Delete an alloy from the user's database."
       tags:
@@ -5057,7 +5326,7 @@ paths:
                     status: "fail"
                     message: "No JWT stored in Session."
 
-  /alloys/update:
+  /v1/sim/alloys/update:
     post:
       summary: "Initiate an Alloy and Configuration Session store."
       security:
@@ -5071,75 +5340,15 @@ paths:
           application/json:
             schema:
               type: object
-              properties:
-                alloy_option:
-                  description: "One of either `single`, `both`, or `mix`"
-                  type: string
-                  format: string
-                alloy_type:
-                  description: "One of either `parent`, `weld`, or `mix`"
-                  type: string
-                  format: string
-                alloy:
-                  $ref: '#/components/schemas/Alloy'
-            examples:
-              'Arc_Stark':
-                value:
-                  alloy_option: "single"
-                  alloy_type: "parent"
-                  alloy:
-                    name: "330M Alloy1"
-                    compositions:
-                      - symbol: "C"
-                        weight: 0.3
-                      - symbol: "M"
-                        weight: 0.78
-                      - symbol: "Si"
-                        weight: 1.6
-                      - symbol: "Ni"
-                        weight: 1.9
-                      - symbol: "Cr"
-                        weight: 0.91
-                      - symbol: "Mo"
-                        weight: 0.39
-                      - symbol: "Co"
-                        weight: 0.0
-                      - symbol: "Al"
-                        weight: 0.0
-                      - symbol: "Cu"
-                        weight: 0.0
-                      - symbol: "As"
-                        weight: 0.0
-                      - symbol: "Ti"
-                        weight: 0.0
-                      - symbol: "V"
-                        weight: 0.08
-                      - symbol: "W"
-                        weight: 0.0
-                      - symbol: "S"
-                        weight: 0.003
-                      - symbol: "N"
-                        weight: 0.011
-                      - symbol: "Nb"
-                        weight: 0.0
-                      - symbol: "B"
-                        weight: 0.0
-                      - symbol: "P"
-                        weight: 0.007
+            example:
+              alloy_store:
+                $ref: '#/components/schemas/Alloy Store'
+              method: "Li"
+              auto_calculate_ae: false
+              auto_calculate_ms: false
+              auto_calculate_bs: false
       responses:
         200:
-          description: "Update composition."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-              example:
-                status: "success"
-                message: "Compositions updated."
-        201:
           description: "The alloy and its compositions was successfully updated and stored
             in the Session for the user. An initial Configurations with default values were
             set."
@@ -5160,268 +5369,132 @@ paths:
                   ae1_temp: 700.90196
                   ae3_temp: 845.83796
         400:
-          description: "An invalid payload has been sent with the request."
+          description: "An invalid request has been made."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'Empty payload':
+                'Invalid Payload':
                   value:
                     status: "fail"
-                    message: "Invalid payload."
-                'Invalid Alloy':
+                    message: "Invalid Payload"
+                'No auto calculate':
                   value:
                     status: "fail"
-                    message: "Alloy failed schema validation."
-                    errors:
-                      compositions:
-                      - "Not a valid list."
-                'Invalid Alloy Option':
+                    message: "No auto calculate booleans have been sent."
+                'No Method':
                   value:
                     status: "fail"
-                    message: "Alloy option one of of ['single' | 'both' | 'mix' ]"
-                'Invalid Alloy Type':
+                    message: "Method required."
+                'Selece One method':
                   value:
                     status: "fail"
-                    message: "Alloy type one of of ['parent' | 'weld' | 'mix' ]"
-                'Invalid Alloy Options':
-                  value:
-                    status: "fail"
-                    message: "Alloy option not one of ['single' | 'mix']."
-                'No valid key':
-                  value:
-                    status: "fail"
-                    message: "No valid keys was provided for alloy (i.e. must be 'name' or 'compositions')'"
-                'No Alloy Option':
-                  value:
-                    status: "fail"
-                    message: "No alloy option was provided."
-                'No Alloy':
-                  value:
-                    status: "fail"
-                    message: "No alloy was provided."
-                'No Alloy Type':
-                  value:
-                    status: "fail"
-                    message: "No alloy type was provided."
-                'No Alloy Compisition Provided':
-                  value:
-                    status: "fail"
-                    message: "You must provide an alloy composition."
-                'No Alloy Name Provided':
-                  value:
-                    status: "fail"
-                    message: "You must provide an alloy name."
-                'Failed Schema':
-                  value:
-                    status: "fail"
-                    errors: "string"
-                    message: "Alloy failed schema validation."
-                'Missing Element':
-                  value:
-                    status: "fail"
-                    message: "Missing element error."
-        401:
-          description: "Unauthorized access to the endpoint."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Token':
-                  value:
-                    status: "fail"
-                    message: "No valid Authorization in header."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
-                  value:
-                    status: "fail"
-                    message: "No Session key in header."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
-        500:
-          description: "An internal server error has occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Internal Server Error':
-                  value:
-                    status: "fail"
-                    message: "Unable to retrieve data from Redis."
-                'Conversion Error':
-                  value:
-                    status: "fail"
-                    message: "Compositions conversion error."
-                'Cannot Retrieve Configurations':
-                  value:
-                    status: "fail"
-                    message: "Cannot retrieve configurations from session."
-                'Validation Error':
-                  value:
-                    status: "fail"
-                    errors: "string"
-                    message: "Validation error for session configurations."
-                'Unable to save session':
-                  value:
-                    status: "fail"
-                    errors: "string"
-                    message: "Unable to save to session store."
-    patch:
-      summary: "Update the Alloy compositions in Session store for the user."
-      security:
-        - bearerAuth: []
-      requestBody:
-        description: "Update the Alloy compositions in Session store for the user."
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                alloy_option:
-                  description: "One of either `single`, `both`, or `mix`"
-                  type: string
-                  format: string
-                alloy_type:
-                  description: "One of either `parent`, `weld`, or `mix`"
-                  type: string
-                  format: string
-                alloy:
-                  $ref: '#/components/schemas/Alloy'
-            examples:
-              'Arc_Stark':
-                value:
-                  alloy_option: "single"
-                  alloy_type: "parent"
-                  alloy:
-                    compositions:
-                      - symbol: "C"
-                        weight: 0.5
-      tags:
-        - Configurations
-      responses:
-        200:
-          description: "The request was success fully completed meaning the Session store has been updated with the new
-            alloy compositions and if any limit values need to be auto calculated, the system will do so and return the
-            newly updated values in a `data` object."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Auto Calculate':
-                  value:
-                    status: "success"
-                    message: "Compositions updated."
-                'Auto Calculate All Transformation Temps':
-                  value:
-                    status: "success"
-                    message: "Compositions and other values updated."
-                    data:
-                      ms_temp: 464.1960
-                      ms_rate_param: 0.0207
-                      bs_temp: 563.2380
-                      ae1_temp: 700.90196
-                      ae3_temp: 845.83796
-                'Auto Calculate BS Only':
-                  value:
-                    status: "success"
-                    message: "Compositions and other values updated."
-                    data:
-                      bs_temp: 563.2380
-                'Auto Calculate MS Only':
-                  value:
-                    status: "success"
-                    message: "Compositions and other values updated."
-                    data:
-                      ms_temp: 464.1960
-                      ms_rate_param: 0.0207
-                'Auto Calculate Ae Only':
-                  value:
-                    status: "success"
-                    message: "Compositions and other values updated."
-                    data:
-                      ae1_temp: 700.90196
-                      ae3_temp: 845.83796
-        400:
-          description: "An invalid payload has been sent with the request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Empty payload':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'No Alloy Option':
-                  value:
-                    status: "fail"
-                    message: "No alloy option was provided."
-                'No Alloy':
-                  value:
-                    status: "fail"
-                    message: "No alloy was provided."
-                'Invalid Alloy':
-                  value:
-                    status: "fail"
-                    message: "Alloy failed schema validation."
-                    errors:
-                      compositions:
-                        - "Not a valid list."
-                'Invalid Alloy Option':
-                  value:
-                    status: "fail"
-                    message: "Alloy option one of of ['single' | 'both' | 'mix' ]"
-                'Invalid Alloy Type':
-                  value:
-                    status: "fail"
-                    message: "Alloy type one of of ['parent' | 'weld' | 'mix' ]"
-                'No Valid Key':
-                  value:
-                    status: "fail"
-                    message: "No valid key in the alloy was provided."
-                'Invalid Composition':
-                  value:
-                    status: "fail"
-                    message: "Valid compositions must be provided as a list."
+                    message: "Method must be one of [\"Li98\" | \"Kirkaldy83\"]."
                 'No Alloy Store':
                   value:
                     status: "fail"
-                    message: "No previous session initiated."
+                    message: "Alloy store required."
+                'No Alloy Option':
+                  value:
+                    status: "fail"
+                    message: "Alloy option must be one of [\"single\" | \"mix\"]"
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Invalid Element Weight':
+                  value:
+                    status: "fail"
+                    error: "Error .."
+                    message: "Invalid element weight error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Model schema validation error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'No Mix Option':
+                  value:
+                    status: "fail"
+                    message: "Mix option not allowed."
+                'No Alloy Composition':
+                  value:
+                    status: "fail"
+                    message: "No alloy composition."
         401:
-          description: "Unauthorized access to the endpoint."
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'No Token':
+                'No User':
                   value:
                     status: "fail"
-                    message: "No valid Authorization in header."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
-                  value:
-                    status: "fail"
-                    message: "No Session key in header."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
+                    error: "error"
+                    message: "User does not exist."
         500:
           description: "An internal server error has occurred."
           content:
@@ -5432,19 +5505,42 @@ paths:
                 'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "Unable to retrieve data from Redis."
-                'Unable to save session':
+                    message: "No JWT stored in Session."
+                'Configuration Errors':
                   value:
                     status: "fail"
                     errors: "string"
-                    message: "Unable to save to session store."
-                'Conversion Error':
+                    message: "Configuration error"
+                'Composition Error':
                   value:
                     status: "fail"
                     message: "Compositions conversion error."
-  /configs/method/update:
-    put:
-      summary: "Update the method used in the Session store of the current user."
+                'Ms and Ms rate param error':
+                  value:
+                    status: "fail"
+                    error: "Invalid Ms value"
+                    message: "Calculating Ms and Ms rate param error."
+                'BS Error':
+                  value:
+                    status: "fail"
+                    error: "Invalid BS value"
+                    message: "Calculating Bs error."
+                'Ae ValueError':
+                  value:
+                    status: "fail"
+                    error: "Invalid Ae value"
+                    message: "Calculating Ae1 and Ae3 ValueError."
+                'Ae Error':
+                  value:
+                    status: "fail"
+                    error: "Invalid Ae value"
+                    message: "Calculating Ae1 and Ae3 Error."
+
+  /v1/sim/configs/ms:
+    post:
+      summary: "Initiate calculation for MS."
+      tags:
+        - Configurations
       security:
         - bearerAuth: []
       requestBody:
@@ -5456,200 +5552,9 @@ paths:
               properties:
                 method:
                   type: string
-            examples:
-              Kirkaldy83:
-                value:
-                  method: "Kirkaldy83"
-              Li98:
-                value:
-                  method: "Li98"
-      tags:
-        - Configurations
-      responses:
-        200:
-          description: "Method changed successfully for the current user."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "success"
-                message: "Changed to Kirkaldy83 method."
-        400:
-          description: 'Invalid payload sent in the request.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Empty Payload':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'No Method Key':
-                  value:
-                    status: "fail"
-                    message: "No method was provided."
-                'Bad Method Type':
-                  value:
-                    status: "fail"
-                    message: "Invalid method provided (must be Li98 or Kirkaldy83)"
-        401:
-          description: "Unauthorized access to the endpoint."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Token':
-                  value:
-                    status: "fail"
-                    message: "No valid Authorization in header."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
-                  value:
-                    status: "fail"
-                    message: "No Session key in header."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
-        404:
-          description: "Cannot find a current Session store for the user."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "No previous configurations was set."
-        500:
-          description: "An internal server error has occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Internal Server Error':
-                  value:
-                    status: "fail"
-                    message: "Unable to retrieve data from Redis."
-                'Unable to save session':
-                  value:
-                    status: "fail"
-                    errors: "string"
-                    message: "Unable to save to session store."
-  /configs/update:
-    patch:
-      description: "These configurations are those not including the transformation temperatures
-      that we consider part of the setup. It includes grain size, nucleation start, nucleation
-      finish, start temperatures, and CCT cooling rate."
-      summary: "Update the Session store of the set configurations for the current user."
-      tags:
-        - Configurations
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                grain_size:
-                  type: number
-                  format: float
-            examples:
-              'Valid Configurations':
-                value:
-                  grain_size: 8.0
-                  start_temp: 900
-                  cct_cooling_rate: 10
-      responses:
-        202:
-          description: "The configurations were updated successfully and no content returned."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "success"
-                message: "Setup configurations values have been updated."
-        400:
-          description: 'Invalid payload sent in the request.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Empty Payload':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'No Valid Keys':
-                  value:
-                    status: "fail"
-                    message: "Payload does not have any valid keys."
-        401:
-          description: "Unauthorized access to the endpoint."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Token':
-                  value:
-                    status: "fail"
-                    message: "No valid Authorization in header."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
-                  value:
-                    status: "fail"
-                    message: "No Session key in header."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
-        404:
-          description: "No content can be found to update."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "No previous session configurations was set."
-        500:
-          description: "An internal server error has occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Internal Server Error':
-                  value:
-                    status: "fail"
-                    message: "Unable to retrieve data from Redis."
-                'Unable to save session':
-                  value:
-                    status: "fail"
-                    errors: "string"
-                    message: "Unable to save to session store."
-  /configs/ms:
-    get:
-      summary: "Update the auto calculate for MS and MS Rate Parameter and return the new values."
-      tags:
-        - Configurations
-      security:
-        - bearerAuth: []
+                  example: "Li"
+                alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
       responses:
         200:
           description: "The auto calculate for MS store has been updated and returned."
@@ -5669,42 +5574,118 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
+                'Invalid Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid Payload"
                 'No Alloy Store':
                   value:
                     status: "fail"
-                    message: "No previous session initiated."
-                'No Configurations Store':
+                    message: "Alloy store required."
+                'No Method':
                   value:
                     status: "fail"
-                    message: "No previous session initiated."
-                'No Compositions for Alloy Type':
+                    message: "Method required."
+                'Selece One method':
                   value:
                     status: "fail"
-                    message: "User has not set an Alloy."
+                    message: "Method must be one of [\"Li98\" | \"Kirkaldy83\"]."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Model schema validation error."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Invalid Element Weight':
+                  value:
+                    status: fail
+                    error: "Error .."
+                    message: "Invalid element weight error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'No Mix Option':
+                  value:
+                    status: "fail"
+                    message: "Mix option not allowed."
+                'No Alloy Composition':
+                  value:
+                    status: "fail"
+                    message: "No alloy composition."
         401:
-          description: "Unauthorized access to the endpoint."
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'No Token':
+                'No User':
                   value:
                     status: "fail"
-                    message: "No valid Authorization in header."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
-                  value:
-                    status: "fail"
-                    message: "No Session key in header."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
+                    error: "error"
+                    message: "User does not exist."
         500:
           description: "An internal server error has occurred."
           content:
@@ -5715,18 +5696,20 @@ paths:
                 'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "Unable to retrieve data from Redis."
-                'Conversion Error':
-                  value:
-                    status: "fail"
-                    message: "Compositions conversion error."
-                'Unable to save session':
+                    message: "No JWT stored in Session."
+                'Configuration Errors':
                   value:
                     status: "fail"
                     errors: "string"
-                    message: "Unable to save to session store."
-    put:
-      summary: "We update the server session store of MS, MS Rate Parameter and BS"
+                    message: "Configuration error"
+                'Ms and Ms rate param error':
+                  value:
+                    status: "fail"
+                    error: "Invalid Ms value"
+                    message: "Calculating Ms and Ms rate param error."
+  /v1/sim/configs/bs:
+    post:
+      summary: "Initiate calculation for BS."
       tags:
         - Configurations
       security:
@@ -5738,98 +5721,11 @@ paths:
             schema:
               type: object
               properties:
-                ms_temp:
-                  type: number
-                  format: float
-                  example: 464.1960
-                ms_rate_param:
-                  type: number
-                  format: float
-                  example: 0.0207
-      responses:
-        202:
-          description: "The BS, MS and MS Rate Parameter temperatures were updated and no content returned."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "success"
-        400:
-          description: "An invalid payload was sent in the request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Request Body':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'Missing MS':
-                  value:
-                    status: "fail"
-                    message: "MS temperature is required."
-                'Missing MS Rate Parameter':
-                  value:
-                    status: "fail"
-                    message: "MS Rate Parameter temperature is required."
-        401:
-          description: "Unauthorized access to the endpoint."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Token':
-                  value:
-                    status: "fail"
-                    message: "No valid Authorization in header."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
-                  value:
-                    status: "fail"
-                    message: "No Session key in header."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
-        404:
-          description: "No previous session configurations was found for the user."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "No previous session configurations was set."
-        500:
-          description: "An internal server error has occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Internal Server Error':
-                  value:
-                    status: "fail"
-                    message: "Unable to retrieve data from Redis."
-                'Unable to save session':
-                  value:
-                    status: "fail"
-                    errors: "string"
-                    message: "Unable to save to session store."
-  /configs/bs:
-    get:
-      summary: "Update the auto calculate for BS and return the new values."
-      tags:
-        - Configurations
-      security:
-        - bearerAuth: []
+                method:
+                  type: string
+                  example: "Li"
+                alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
       responses:
         200:
           description: "The auto calculate for BS store has been updated and returned."
@@ -5840,7 +5736,7 @@ paths:
               example:
                 status: "success"
                 data:
-                  bs_temp: 563.2380
+                  bs_temp: 464.1960
         400:
           description: "An invalid request has been made."
           content:
@@ -5848,42 +5744,118 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
+                'Invalid Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid Payload"
                 'No Alloy Store':
                   value:
                     status: "fail"
-                    message: "No previous session initiated."
-                'No Configurations Store':
+                    message: "Alloy store required."
+                'No Method':
                   value:
                     status: "fail"
-                    message: "No previous session initiated."
-                'No Compositions for Alloy Type':
+                    message: "Method required."
+                'Selece One method':
                   value:
                     status: "fail"
-                    message: "User has not set an Alloy."
+                    message: "Method must be one of [\"Li98\" | \"Kirkaldy83\"]."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Model schema validation error."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Invalid Element Weight':
+                  value:
+                    status: fail
+                    error: "Error .."
+                    message: "Invalid element weight error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'No Mix Option':
+                  value:
+                    status: "fail"
+                    message: "Mix option not allowed."
+                'No Alloy Composition':
+                  value:
+                    status: "fail"
+                    message: "No alloy composition."
         401:
-          description: "Unauthorized access to the endpoint."
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'No Token':
+                'No User':
                   value:
                     status: "fail"
-                    message: "No valid Authorization in header."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
-                  value:
-                    status: "fail"
-                    message: "No Session key in header."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
+                    error: "error"
+                    message: "User does not exist."
         500:
           description: "An internal server error has occurred."
           content:
@@ -5894,18 +5866,20 @@ paths:
                 'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "Unable to retrieve data from Redis."
-                'Unable to save session':
+                    message: "No JWT stored in Session."
+                'Configuration Errors':
                   value:
                     status: "fail"
                     errors: "string"
-                    message: "Unable to save to session store."
-                'Conversion Error':
+                    message: "Configuration error"
+                'BS Error':
                   value:
                     status: "fail"
-                    message: "Compositions conversion error."
-    put:
-      summary: "We update the server session store of BS"
+                    error: "Invalid BS value"
+                    message: "Calculating Bs error."
+  /v1/sim/configs/ae:
+    post:
+      summary: "Initiate calculation for Ae."
       tags:
         - Configurations
       security:
@@ -5917,93 +5891,14 @@ paths:
             schema:
               type: object
               properties:
-                bs_temp:
-                  type: number
-                  format: float
-                  example: 563.2380
-      responses:
-        202:
-          description: "The BS, MS and MS Rate Parameter temperatures were updated and no content returned."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "success"
-        400:
-          description: "An invalid payload was sent in the request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Request Body':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'Missing BS':
-                  value:
-                    status: "fail"
-                    message: "BS temperature is required."
-        401:
-          description: "Unauthorized access to the endpoint."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Token':
-                  value:
-                    status: "fail"
-                    message: "No valid Authorization in header."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
-                  value:
-                    status: "fail"
-                    message: "No Session key in header."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
-        404:
-          description: "No previous session configurations was found for the user."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "No previous session configurations was set."
-        500:
-          description: "An internal server error has occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Internal Server Error':
-                  value:
-                    status: "fail"
-                    message: "Unable to retrieve data from Redis."
-                'Unable to save session':
-                  value:
-                    status: "fail"
-                    errors: "string"
-                    message: "Unable to save to session store."
-  /configs/ae:
-    get:
-      summary: "Update the auto calculate for Ae1 and Ae3 and return the new values."
-      tags:
-        - Configurations
-      security:
-        - bearerAuth: []
+                method:
+                  type: string
+                  example: "Li"
+                alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
       responses:
         200:
-          description: "The auto calculate for Ae1 and Ae3 store has been updated and returned."
+          description: "The auto calculate for Ae store has been updated and returned."
           content:
             application/json:
               schema:
@@ -6020,156 +5915,118 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
+                'Invalid Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid Payload"
                 'No Alloy Store':
                   value:
                     status: "fail"
-                    message: "No previous session initiated."
-                'No Configurations Store':
+                    message: "Alloy store required."
+                'No Method':
                   value:
                     status: "fail"
-                    message: "No previous session initiated."
-                'No Compositions for Alloy Type':
+                    message: "Method required."
+                'Selece One method':
                   value:
                     status: "fail"
-                    message: "User has not set an Alloy."
+                    message: "Method must be one of [\"Li98\" | \"Kirkaldy83\"]."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Model schema validation error."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Invalid Element Weight':
+                  value:
+                    status: fail
+                    error: "Error .."
+                    message: "Invalid element weight error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'No Mix Option':
+                  value:
+                    status: "fail"
+                    message: "Mix option not allowed."
+                'No Alloy Composition':
+                  value:
+                    status: "fail"
+                    message: "No alloy composition."
         401:
-          description: "Unauthorized access to the endpoint."
+          description: "The user is not authenticated to perform this request."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
               examples:
-                'No Token':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "No valid Authorization in header."
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
                 'Invalid Token':
                   value:
                     status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
-                  value:
-                    status: "fail"
-                    message: "No Session key in header."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
-        500:
-          description: "An internal server error has occurred."
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
               examples:
-                'Internal Server Error':
+                'Account Disabled':
                   value:
                     status: "fail"
-                    message: "Unable to retrieve data from Redis."
-                'Unable to save session':
-                  value:
-                    status: "fail"
-                    errors: "string"
-                    message: "Unable to save to session store."
-                'Conversion Error':
-                  value:
-                    status: "fail"
-                    message: "Compositions conversion error."
-    put:
-      summary: "We update the server session store of Ae1 and Ae3"
-      tags:
-        - Configurations
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                ae1_temp:
-                  type: number
-                  format: float
-                  example: 700.9020
-                ae3_temp:
-                  type: number
-                  format: float
-                  example: 845.8380
-      responses:
-        202:
-          description: "The Ae1 and Ae3 temperatures were updated."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "success"
-        400:
-          description: "An invalid payload was sent in the request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Request Body':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'Missing Ae1':
-                  value:
-                    status: "fail"
-                    message: "Ae1 temperature is required."
-                'Missing Ae3':
-                  value:
-                    status: "fail"
-                    message: "Ae3 temperature is required."
-                'No Alloy Store':
-                  value:
-                    status: "fail"
-                    message: "No previous session initiated."
-                'No Configurations Store':
-                  value:
-                    status: "fail"
-                    message: "No previous session initiated."
-                'No Compositions for Alloy Type':
-                  value:
-                    status: "fail"
-                    message: "User has not set an Alloy."
-        401:
-          description: "Unauthorized access to the endpoint."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Token':
-                  value:
-                    status: "fail"
-                    message: "No valid Authorization in header."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
-                  value:
-                    status: "fail"
-                    message: "No Session key in header."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
+                    message: "This user account has been disabled."
         404:
-          description: "No previous session configurations was found for the user."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "No previous session configurations was set."
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
         500:
           description: "An internal server error has occurred."
           content:
@@ -6180,12 +6037,17 @@ paths:
                 'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "Unable to retrieve data from Redis."
-                'Unable to save session':
+                    message: "No JWT stored in Session."
+                'Configuration Errors':
                   value:
                     status: "fail"
                     errors: "string"
-                    message: "Unable to save to session store."
+                    message: "Configuration error"
+                'Ae Error':
+                  value:
+                    status: "fail"
+                    error: "Invalid Ae value"
+                    message: "Calculating Ae1 and Ae3 error."
 
   /v1/sim/simulate:
     post:
@@ -6374,6 +6236,802 @@ paths:
                     errors: "Error."
                     message: "Assertion error building response data."
 
+  /v1/sim/ae3equilibrium:
+    post:
+      summary: "Run the Ae3Simulation and get the results back."
+      security:
+        - bearerAuth: []
+      tags:
+        - Ae3Equilibrium
+      requestBody:
+        description: "Data needed to run Ae3Simulation."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                last_alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
+      responses:
+        200:
+          description: "Ae3 Equilibrium ran successfully."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                  ferrite_phase_frac: 1.21
+                  eutectic_composition_carbon: 12.12
+                  cf: 2.4
+                  results_plot:
+        400:
+          description: "An invalid request has been made."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Data':
+                  value:
+                    status: "fail"
+                'No Alloy Store':
+                  value:
+                    status: "fail"
+                    message: "Alloy store required."
+                'One Alloy Option':
+                  value:
+                    status: "fail"
+                    message: "Alloy option must be one of [\"single\" | \"mix\"]"
+                'Ae1 Temperature Required':
+                  value:
+                    status: "fail"
+                    message: "Ae1 temperature required."
+                'Ae1 Temperature Must Be Positive':
+                  value:
+                    status: "fail"
+                    message: "Ae1 temperature must be more than 0."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Model schema validation error."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Invalid Element Weight':
+                  value:
+                    status: fail
+                    error: "Error .."
+                    message: "Invalid element weight error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'No Mix Option':
+                  value:
+                    status: "fail"
+                    message: "Mix option not allowed."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+                'Configuration Error':
+                  value:
+                    status: "fail"
+                    errors: "Errors ..."
+                    message: "Configuration Error"
+                'Exception in Xfe':
+                  value:
+                    status: "fail"
+                    errors: "Division by zero."
+                    message: "General exception in Xfe method 2."
+                'Zero Division Error':
+                  value:
+                    status: "fail"
+                    errors: "Division by zero."
+                    message: "Division by Zero."
+                'Assertion Error':
+                  value:
+                    status: "fail"
+                    errors: "Error."
+                    message: "Assertion error building response data."
+
+  /v1/sim/user/rating:
+    post:
+      summary: "Create ratings."
+      tags:
+        - Rating
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "RequestBody needed to make rating."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rating'
+      responses:
+        200:
+          description: "The User rating has been successfully saved."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              example:
+                status: "success"
+                message: "Rating submitted by 812falkon@mail"
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Rating':
+                  value:
+                    status: "fail"
+                    message: "No rating provided."
+                'Rating Validation Error':
+                  value:
+                    status: "fail"
+                    message: "Rating validation error."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/user/feedback:
+    get:
+      summary: "Return a list of feedback based of get request from Admin"
+      tags:
+        - Rating
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "The User rating has been successfully saved."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: string
+              example:
+                sort:
+                limit:
+                status: "success"
+                current_page: 1
+                total_pages: 20
+                n_results: 213
+                data:
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Parameters':
+                  value:
+                    status: "fail"
+                    message: "Invalid parameters."
+                'Invalid Page':
+                  value:
+                    status: "fail"
+                    message: "Required page parameter."
+                'Invalid Limit':
+                  value:
+                    status: "fail"
+                    message: "Invalid limit parameter."
+                'Limit Must Be Positive':
+                  value:
+                    status: "fail"
+                    message: "Limit must be a positive int."
+                'Invlid Sort':
+                  value:
+                    status: "fail"
+                    message: "Sort value is invalid."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'No Results':
+                  value:
+                    status: "fail"
+                    message: "No results found."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+    post:
+      summary: "Method to post feedback."
+      tags:
+        - Rating
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "RequestBody needed to make feedback."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Feedback'
+      responses:
+        200:
+          description: "The User rating has been successfully saved."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              example:
+                status: "success"
+                message: "Rating submitted by 812falkon@mail"
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Comment':
+                  value:
+                    status: "fail"
+                    message: "No comment provided."
+                'No Category':
+                  value:
+                    status: "fail"
+                    message: "No category provided."
+                'Feedback Validation Failed':
+                  value:
+                    status: "fail"
+                    message: "Feedback validation error."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/user/feedback/search:
+    get:
+      summary: "Return a list of feedback based of get request from Admin"
+      tags:
+        - Rating
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Successfully returned feedback."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: string
+              example:
+                status: "success"
+                query:
+                sort:
+                limit:
+                page: 0
+                total_pages: 1
+                data:
+                n_results: 213
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Parameters':
+                  value:
+                    status: "fail"
+                    message: "Invalid parameters."
+                'No Parameters':
+                  value:
+                    status: "fail"
+                    message: "No query parameters provided."
+                'Invalid Page':
+                  value:
+                    status: "fail"
+                    message: "Invalid page parameter."
+                'Invalid Limit':
+                  value:
+                    status: "fail"
+                    message: "Invalid limit parameter."
+                'Invlid Sort':
+                  value:
+                    status: "fail"
+                    message: "Sort value is invalid."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Not authorized':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'No Results':
+                  value:
+                    status: "fail"
+                    message: "No results."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/user/feedback/list/subscribe:
+    post:
+      summary: "Route for Admins to subscribe to the feedback mailing list."
+      tags:
+        - Rating
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Successfully subscribed."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: string
+              examples:
+                'Subscribed':
+                  value:
+                    status: "success"
+                    message: "User has been subscribed."
+                'Unsubscribed':
+                  value:
+                    status: "success"
+                    message: "User has been unsubscribed."
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Action':
+                  value:
+                    status: "fail"
+                    message: "No action provided."
+                'Already Subscribed':
+                  value:
+                    status: "fail"
+                    message: "User is already subscribed."
+                'Already Unsubscribed':
+                  value:
+                    status: "fail"
+                    message: "User is already unsubscribed."
+                'Invlid Action':
+                  value:
+                    status: "fail"
+                    message: "Invalid action."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Not authorized':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+
+
 components:
   securitySchemes:
     bearerAuth:
@@ -6385,6 +7043,22 @@ components:
         is_valid:
           type: boolean
           default: false
+    Rating:
+      properties:
+        rating:
+          type: integer
+          example: 5
+    Feedback:
+      properties:
+        category:
+          type: string
+          example: "performance"
+        rating:
+          type: integer
+          example: 5
+        comment:
+          type: string
+          example: "The best system ever."
     'User':
       description: "A document type as the complete User schema with all values."
       properties:
@@ -6990,3 +7664,7 @@ tags:
     description: "Endpoints that update the Session store of the user's configurations."
   - name: Simulation
     description: Endpoints that manage simulation activities.
+  - name: Ae3Equilibrium
+    description: "Endpoints that manages Ae3Equilibrium simulation."
+  - name: Rating
+    description: "Endpoints that manages rating."

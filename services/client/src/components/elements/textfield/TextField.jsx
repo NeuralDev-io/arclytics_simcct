@@ -58,7 +58,6 @@ class TextField extends Component {
       value = '',
       length = 'default',
       error = '',
-      errorTooltipPosition = 'right',
       name,
       ...other
     } = this.props
@@ -73,7 +72,6 @@ class TextField extends Component {
     return (
       <div className={`${styles.container} ${length === 'default' ? '' : styles[length]}`}>
         <input
-          {...other}
           type={type}
           className={classname}
           placeholder={placeholder}
@@ -81,11 +79,12 @@ class TextField extends Component {
           value={value}
           onChange={e => this.handleChange(e)}
           disabled={isDisabled}
+          {...other}
         />
         {(displayedError !== '') && (
           <Tooltip
-            position={errorTooltipPosition}
-            className={{ container: styles.errorContainer, tooltip: `${styles.errorTooltip} ${styles[errorTooltipPosition]}` }}
+            space={16}
+            className={{ container: styles.errorContainer }}
           >
             <FontAwesomeIcon icon={faExclamationCircle} className={styles.icon} size="sm" />
             <span>{displayedError}</span>
@@ -113,7 +112,6 @@ TextField.propTypes = {
     message: PropTypes.string,
   })),
   error: PropTypes.string,
-  errorTooltipPosition: PropTypes.string,
 }
 
 TextField.defaultProps = {
@@ -125,7 +123,6 @@ TextField.defaultProps = {
   value: '',
   constraints: [],
   error: '',
-  errorTooltipPosition: 'right',
 }
 
 export default TextField

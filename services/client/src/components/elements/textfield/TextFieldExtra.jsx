@@ -65,6 +65,7 @@ class TextFieldExtra extends React.Component {
       <div className={`${styles.container} ${length === 'default' ? '' : styles[length]}`}>
         {prefix !== '' && <span className={styles.prefix}>{prefix}</span>}
         <input
+          {...other}
           type={type}
           className={classname}
           placeholder={placeholder}
@@ -72,7 +73,6 @@ class TextFieldExtra extends React.Component {
           value={value}
           onChange={e => this.handleChange(e)}
           disabled={isDisabled}
-          {...other}
         />
         {suffix !== '' && <span className={`${styles.suffix} ${displayedError !== '' && styles.withError}`}>{suffix}</span>}
         {(displayedError !== '') && (

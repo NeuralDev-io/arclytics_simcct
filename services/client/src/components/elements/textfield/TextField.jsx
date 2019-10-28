@@ -72,6 +72,7 @@ class TextField extends Component {
     return (
       <div className={`${styles.container} ${length === 'default' ? '' : styles[length]}`}>
         <input
+          {...other}
           type={type}
           className={classname}
           placeholder={placeholder}
@@ -79,7 +80,6 @@ class TextField extends Component {
           value={value}
           onChange={e => this.handleChange(e)}
           disabled={isDisabled}
-          {...other}
         />
         {(displayedError !== '') && (
           <Tooltip

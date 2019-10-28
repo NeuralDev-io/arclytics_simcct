@@ -115,7 +115,7 @@ class CompForm extends Component {
           <div className={styles.alloyHeader}>
             <div className={styles.titleContainer}>
               <h6>Alloy</h6>
-              <Tooltip className={{ tooltip: `${styles.infoTip} ${styles.methodTooltip}`, container: styles.infoTipContainer }} position="right">
+              <Tooltip className={{ container: styles.infoTipContainer }} position="horizontal">
                 <BrainIcon className={styles.infoIcon} />
                 <p>
                   Test

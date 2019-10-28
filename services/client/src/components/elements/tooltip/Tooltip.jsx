@@ -78,11 +78,15 @@ class Tooltip extends Component {
       }
     }
 
-    window.onscroll = this.hideTooltip
+    document.getElementById('app').addEventListener('scroll', this.hideTooltip)
 
     this.setState({
       style,
     })
+  }
+
+  componentWillUnmount = () => {
+    document.getElementById('app').removeEventListener('scroll', this.hideTooltip)
   }
 
   showTooltip = () => {
@@ -116,28 +120,22 @@ class Tooltip extends Component {
       }
     }
     if (position === 'horizontal') {
-      // center align the tooltip by taking both the target and tooltip widths into account
-      style.top = dimensions.top + dimensions.height / 2 - this.height / 2
-      // make sure it doesn't poke off the left side of the page
+      // center align the tooltip by taking both the target and tooltip heights into account
+      style.top = dimensions.top + dimensions.height / 2 - this.tooltipEl.clientHeight / 2
+      // make sure it doesn't poke off the top side of the page
       style.top = Math.max(this.space, style.top)
       style.top = Math.min(
         style.top,
-        document.body.clientHeight - this.height - this.space,
-      ) // or off the right
+        window.innerHeight - this.tooltipEl.clientHeight - this.space,
+      ) // or off the bottom
 
       if (dimensions.left < window.innerWidth / 2) {
         // the top half of the page
-        // when on the top half of the page, position the top of the tooltip
-        // just below the target (it will stretch downwards)
         style.left = dimensions.left + dimensions.width + this.space
       } else {
-        // when on the bottom half, set the bottom of the tooltip
-        // just above the top of the target (it will stretch upwards)
         style.right = window.innerWidth - dimensions.left + this.space
       }
     }
-
-    // window.addEventListener('scroll', this.hideTooltip)
 
     this.setState({
       visible: true,
@@ -146,7 +144,6 @@ class Tooltip extends Component {
   }
 
   hideTooltip = () => {
-    // window.removeEventListener('scroll', this.hideTooltip)
     this.setState({ visible: false })
   }
 

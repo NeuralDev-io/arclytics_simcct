@@ -201,7 +201,7 @@ class ConfigForm extends Component {
           <div className="input-col">
             <div className={styles.headerContainer}>
               <h6>CCT/TTT method</h6>
-              <Tooltip className={{ tooltip: `${styles.infoTip} ${styles.methodTooltip}`, container: styles.infoTipContainer }} position="right">
+              <Tooltip className={{ container: styles.infoTipContainer }}>
                 <BrainIcon className={styles.infoIcon} />
                 <p>
                   J.S.Krikaldy, et al., &quot;Prediction of microstructure and hardenability in
@@ -235,7 +235,7 @@ class ConfigForm extends Component {
           <div className="input-col">
             <div className={styles.headerContainer}>
               <h6>Grain size</h6>
-              <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
+              <Tooltip className={{ container: styles.infoTipContainer }}>
                 <BrainIcon className={styles.infoIcon} />
                 <p>
                   Plots a sigmoidal function distribution on a separate sheet.
@@ -288,7 +288,7 @@ class ConfigForm extends Component {
             <div>
               <div className={styles.headerContainer}>
                 <h6>Ferrite/Pearlite</h6>
-                <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="right">
+                <Tooltip className={{ container: styles.infoTipContainer }}>
                   <BrainIcon className={styles.infoIcon} />
                   <p>
                     Ae3 = temperature below austenite to ferrite transformation becomes
@@ -353,7 +353,7 @@ class ConfigForm extends Component {
             <div>
               <div className={styles.headerContainer}>
                 <h6>Bainite</h6>
-                <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
+                <Tooltip className={{ container: styles.infoTipContainer }}>
                   <BrainIcon className={styles.infoIcon} />
                   <p>
                     Bainite transformation temperature (C)
@@ -395,7 +395,7 @@ class ConfigForm extends Component {
             <div>
               <div className={styles.headerContainer}>
                 <h6>Martensite</h6>
-                <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
+                <Tooltip className={{ container: styles.infoTipContainer }}>
                   <BrainIcon className={styles.infoIcon} />
                   <p>
                     Martensite transformation temperature (C)
@@ -464,7 +464,7 @@ class ConfigForm extends Component {
         <div className={styles.third}>
           <div className={styles.headerContainer}>
             <h5>Nucleation parameters</h5>
-            <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="right">
+            <Tooltip className={{ container: styles.infoTipContainer }}>
               <BrainIcon className={styles.infoIcon} />
               <p>
                 Plots a sigmoidal function distribution on a separate sheet This is for

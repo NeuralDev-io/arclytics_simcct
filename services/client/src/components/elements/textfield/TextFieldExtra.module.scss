@@ -74,17 +74,6 @@
   }
 }
 
-.errorTooltip {
-  &.right { left: calc(100% + 1.25rem); }
-
-  &.bottom {
-    left: initial;
-    transform: initial;
-    right: -.75rem;
-    top: calc(100% + 1.25rem);
-  }
-}
-
 .error {
   background-color: rgba(var(--r500-rgb), 0.1);
   border: 1px solid var(--r500);

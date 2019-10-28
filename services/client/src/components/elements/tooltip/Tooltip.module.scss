@@ -4,53 +4,21 @@
   background-color: rgba(var(--n900-rgb), 0.9);
   color: var(--n0);
   width: max-content;
-  max-width: 28rem;
-  // box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 5px 10px rgba(0,0,0,.15);
+  max-width: 35rem;
   border-radius: 6px;
   padding: .5rem .75rem;
   box-sizing: border-box;
   transition: $ease-in-cubic all .4s;
-  position: absolute;
-  transition: opacity 100ms,transform 100ms,-webkit-transform 100ms;
-  transition-delay: 100ms;
+  position: fixed;
+  transition: opacity 0.4s;
+  transition-delay: 0.2s;
 
   opacity: 0;
-  z-index: -1;
   pointer-events: none;
 
   &.visible {
     opacity: 1;
-    z-index: 99;
+    z-index: 1;
     pointer-events: auto;
   }
-}
-
-.container {
-  width: fit-content;
-  position: relative;
-  //z-index: 10;
-}
-
-.bottom {
-  top: calc(100% + .5rem);
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.top {
-  bottom: calc(100% + .5rem);
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.right {
-  left: calc(100% + .5rem);
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.left {
-  right: calc(100% + .5rem);
-  top: 50%;
-  transform: translateY(-50%);
 }

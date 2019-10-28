@@ -47,7 +47,6 @@ class TextFieldExtra extends React.Component {
       value = '',
       length = 'default',
       error = '',
-      errorTooltipPosition = 'right',
       prefix,
       suffix,
       name,
@@ -78,11 +77,11 @@ class TextFieldExtra extends React.Component {
         {suffix !== '' && <span className={`${styles.suffix} ${displayedError !== '' && styles.withError}`}>{suffix}</span>}
         {(displayedError !== '') && (
           <Tooltip
-            position={errorTooltipPosition}
-            className={{ container: styles.errorContainer, tooltip: `${styles.errorTooltip} ${styles[errorTooltipPosition]}` }}
+            space={16}
+            className={{ container: styles.errorContainer }}
           >
             <FontAwesomeIcon icon={faExclamationCircle} className={styles.icon} size="sm" />
-            <span>{displayedError}</span>
+            <p>{displayedError}</p>
           </Tooltip>
         )}
       </div>
@@ -107,7 +106,6 @@ TextFieldExtra.propTypes = {
     message: PropTypes.string,
   })),
   error: PropTypes.string,
-  errorTooltipPosition: PropTypes.string,
   prefix: PropTypes.string,
   suffix: PropTypes.string,
 }
@@ -121,7 +119,6 @@ TextFieldExtra.defaultProps = {
   value: '',
   constraints: [],
   error: '',
-  errorTooltipPosition: 'right',
   prefix: '',
   suffix: '',
 }

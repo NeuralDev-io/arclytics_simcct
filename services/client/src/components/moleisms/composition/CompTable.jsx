@@ -140,7 +140,6 @@ class CompTable extends Component {
             length="stretch"
             isDisabled={value === undefined}
             error={parentError[row.symbol]}
-            errorTooltipPosition="left"
           />
         ),
         ...(() => {

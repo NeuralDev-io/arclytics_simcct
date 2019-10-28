@@ -169,6 +169,8 @@ function App() {
               <Route component={NoMatchPage} />
             </Switch>
           </div>
+          <div id="modal-container" />
+          <div id="tooltip-container" />
         </Provider>
       </SnackbarProvider>
     </ErrorBoundary>

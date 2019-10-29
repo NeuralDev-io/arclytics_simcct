@@ -106,6 +106,7 @@ export const layout = (height, width) => ({
       weight: 600,
       color: getColor('--n500'),
     },
+    color: getColor('--n500'),
   },
   yaxis: {
     titlefont: {
@@ -119,6 +120,7 @@ export const layout = (height, width) => ({
       weight: 600,
       color: getColor('--n500'),
     },
+    color: getColor('--n500'),
     position: -0.1,
   },
 })

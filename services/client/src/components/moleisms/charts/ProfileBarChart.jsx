@@ -17,7 +17,12 @@ import { getColor } from '../../../utils/theming'
 
 import styles from './Chart.module.scss'
 
-const ProfileBarChart = ({ title, name, data, color }) => {
+const ProfileBarChart = ({
+  title,
+  name,
+  data,
+  color,
+}) => {
   let traceData = []
   if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
     traceData = [
@@ -25,18 +30,18 @@ const ProfileBarChart = ({ title, name, data, color }) => {
         type: 'bar',
         x: data.x,
         y: data.y,
-        name: name,
+        name,
         text: data.y.map(String),
         textposition: 'inside',
         hoverinfo: 'none',
         marker: {
-          color: getColor(color)
+          color: getColor(color),
         },
         opacity: 0.7,
         textfont: {
           family: 'Open Sans',
           size: 16,
-        }
+        },
       },
     ]
   }
@@ -51,7 +56,7 @@ const ProfileBarChart = ({ title, name, data, color }) => {
         const defaultLayout = { ...layout(height, width) }
         const profileLayout = {
           ...defaultLayout,
-          showlegend: false
+          showlegend: false,
         }
         return (
           <Plot
@@ -59,14 +64,19 @@ const ProfileBarChart = ({ title, name, data, color }) => {
 
             layout={{
               ...profileLayout,
-              title: title,
+              title: {
+                text: title,
+                font: {
+                  color: getColor('--n600'),
+                },
+              },
               xaxis: {
                 ...profileLayout.xaxis,
               },
               yaxis: {
                 ...profileLayout.yaxis,
                 title: 'Number of Answers',
-                gridwidth: 0
+                gridwidth: 0,
               },
             }}
 
@@ -79,7 +89,7 @@ const ProfileBarChart = ({ title, name, data, color }) => {
               editable: false,
               displaylogo: false,
               displayModeBar: 'hover',
-              showTips: true
+              showTips: true,
             }}
           />
         )

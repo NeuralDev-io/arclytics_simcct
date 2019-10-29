@@ -13,18 +13,25 @@ import {
   createUserProfile,
   updateUserProfile,
 } from '../../../state/ducks/self/actions'
-
 import TextField from '../../elements/textfield'
 import Select from '../../elements/select'
-
 import Button from '../../elements/button'
+import { changeTheme, SUPPORTED_THEMES } from '../../../utils/theming'
+import LightThemeImg from '../../../assets/theme-images/light.png'
+import DarkThemeImg from '../../../assets/theme-images/dark.png'
+import { buttonize } from '../../../utils/accessibility'
+
 import styles from './ProfilePage.module.scss'
 
 class ProfilePage extends Component {
   constructor(props) {
     super(props)
+    let currentTheme = localStorage.getItem('theme') || ''
+    if (!SUPPORTED_THEMES.includes(currentTheme)) {
+      currentTheme = 'light'
+    }
+
     this.state = {
-      email: '',
       firstName: '',
       lastName: '',
       aimValue: null,
@@ -55,6 +62,7 @@ class ProfilePage extends Component {
       ],
       updateError: null,
       edit: false,
+      currentTheme,
     }
   }
 
@@ -63,7 +71,6 @@ class ProfilePage extends Component {
     getUserProfileConnect().then(() => {
       const { user } = this.props
       this.setState({
-        email: user.email,
         firstName: user.first_name,
         lastName: user.last_name,
         aimValue: {
@@ -155,9 +162,14 @@ class ProfilePage extends Component {
     }
   }
 
+  handleChangeTheme = (theme) => {
+    changeTheme(theme)
+    localStorage.setItem('theme', theme)
+    this.setState({ currentTheme: theme })
+  }
+
   render() {
     const {
-      email,
       firstName,
       lastName,
       aimValue,
@@ -170,6 +182,7 @@ class ProfilePage extends Component {
       phaseTransformOptions,
       updateError,
       edit,
+      currentTheme,
     } = this.state
 
     return (
@@ -287,6 +300,27 @@ class ProfilePage extends Component {
                 </>
               )
           }
+        </div>
+        <h3>Theme</h3>
+        <div className={styles.themeContainer}>
+          <div
+            className={`${styles.theme} ${currentTheme === 'light' ? styles.active : ''}`}
+            {...buttonize(() => this.handleChangeTheme('light'))}
+          >
+            <div className={styles.themeImg}>
+              <img src={LightThemeImg} alt="light-theme" />
+            </div>
+            <h5>Light</h5>
+          </div>
+          <div
+            className={`${styles.theme} ${currentTheme === 'dark' ? styles.active : ''}`}
+            {...buttonize(() => this.handleChangeTheme('dark'))}
+          >
+            <div className={styles.themeImg}>
+              <img src={DarkThemeImg} alt="dark-theme" />
+            </div>
+            <h5>Dark</h5>
+          </div>
         </div>
       </div>
     )

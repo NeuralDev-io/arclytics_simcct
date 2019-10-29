@@ -25,7 +25,7 @@
         "semi": ["error", "never"],
         "rest-spread-spacing": "warn",
         "prefer-spread": "warn",
-        "jsx-props-no-spreading": "off",
+        "react/jsx-props-no-spreading": "off",
         "arrow-parens": "off",
         "camelcase": "off"
     },

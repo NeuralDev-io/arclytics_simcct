@@ -46,7 +46,7 @@ import AnalyticsPage from './components/pages/analytics'
 import AboutPage from './components/pages/about'
 import FeedbackPage from './components/pages/feedback'
 import MobilePage from './components/pages/mobile'
-import { changeTheme } from './utils/theming'
+import { changeTheme, SUPPORTED_THEMES } from './utils/theming'
 
 /*
 * DECISION:
@@ -64,7 +64,11 @@ const useStyles = makeStyles({
 
 function App() {
   useEffect(() => {
-    const theme = localStorage.getItem('theme') || ''
+    let theme = localStorage.getItem('theme') || ''
+    if (!SUPPORTED_THEMES.includes(theme)) {
+      localStorage.setItem('theme', 'light')
+      theme = 'light'
+    }
     changeTheme(theme)
   }, [])
   const classes = useStyles()

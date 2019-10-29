@@ -1,3 +1,6 @@
+// current supported themes
+export const SUPPORTED_THEMES = ['light', 'dark']
+
 /**
  * Get a colour variable from CSS
  * @param {string} color colour variable name

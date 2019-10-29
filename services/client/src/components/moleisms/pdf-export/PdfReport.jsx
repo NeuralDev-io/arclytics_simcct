@@ -27,9 +27,9 @@ import { roundTo } from '../../../utils/math'
 Font.register({
   family: 'Lato',
   fonts: [
-    { src: 'http://fonts.gstatic.com/s/lato/v16/S6uyw4BMUTPHvxk6XweuBCY.ttf' },
-    { src: 'http://fonts.gstatic.com/s/lato/v16/S6u9w4BMUTPHh6UVew-FGC_p9dw.ttf', fontWeight: 700 },
-    { src: 'http://fonts.gstatic.com/s/lato/v16/S6u9w4BMUTPHh7USew-FGC_p9dw.ttf', fontWeight: 300 },
+    { src: 'https://fonts.gstatic.com/s/lato/v16/S6uyw4BMUTPHvxk6XweuBCY.ttf' },
+    { src: 'https://fonts.gstatic.com/s/lato/v16/S6u9w4BMUTPHh6UVew-FGC_p9dw.ttf', fontWeight: 700 },
+    { src: 'https://fonts.gstatic.com/s/lato/v16/S6u9w4BMUTPHh7USew-FGC_p9dw.ttf', fontWeight: 300 },
   ],
 })
 

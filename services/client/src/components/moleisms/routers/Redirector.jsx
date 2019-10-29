@@ -41,14 +41,12 @@ class Redirector extends React.Component {
     const { navigated } = this.state
 
     locations.forEach((loc) => {
-      setTimeout(() => {
-        // if already navigated to this location, abort
-        if (loc.location.pathname === pathname || navigated.includes(loc.key)) return
-        // Dispatch action to remove the location from the redux store
-        removeLocationConnect(loc.key)
-        // navigate to this new location
-        history.push(loc.location)
-      }, 1)
+      // if already navigated to this location, abort
+      if (loc.location.pathname === pathname || navigated.includes(loc.key)) return
+      // Dispatch action to remove the location from the redux store
+      removeLocationConnect(loc.key)
+      // navigate to this new location
+      history.push(loc.location)
     })
 
     return null

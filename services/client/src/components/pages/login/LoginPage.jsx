@@ -92,7 +92,7 @@ class LoginPage extends Component {
     const {
       hasForgotPwd,
     } = this.state
-    const { theme } = this.props
+    const { theme, location: { state } } = this.props
 
     let fadeForgot = ('')
     let fadeLogin = ('')
@@ -132,6 +132,7 @@ class LoginPage extends Component {
                   setSubmitting(true)
                   if (res.status === 'success') {
                     if (!res.isProfile) history.push('/profileQuestions')
+                    else if (state && state.forcedOut) history.goBack()
                     else history.push('/')
                   }
                 })
@@ -227,7 +228,10 @@ class LoginPage extends Component {
 }
 
 LoginPage.propTypes = {
-  history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+    goBack: PropTypes.func.isRequired,
+  }).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       token: PropTypes.string,

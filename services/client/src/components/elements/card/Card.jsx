@@ -4,10 +4,10 @@
  *
  * Card component
  *
- * A Material UI inspired wrapper around `@material-ui/core` card component.
+ * A Material UI inspired card component.
  *
- * @version 0.0.1
- * @author Andrew Che
+ * @version 1.0.0
+ * @author Andrew Che, Dalton Le
  */
 import React from 'react'
 import PropTypes from 'prop-types'

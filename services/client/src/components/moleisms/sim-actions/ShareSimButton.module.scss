@@ -20,17 +20,17 @@
   .generate {
     margin-right: 0.75rem;
   }
+}
 
-  .copyBtn {
-    &.active {
-      // background-color: var(--g500);
-      border: 2px solid var(--g500);
-      color: var(--g500);
+.customBtn {
+  &.active {
+    // background-color: var(--g500);
+    border: 2px solid var(--g500);
+    color: var(--g500);
 
-      &:hover {
-        background-color: var(--g500);
-        color: var(--n0);
-      }
+    &:hover {
+      background-color: var(--g500);
+      color: var(--n0);
     }
   }
 }

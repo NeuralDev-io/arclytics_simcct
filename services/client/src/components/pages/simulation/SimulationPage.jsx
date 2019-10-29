@@ -195,7 +195,11 @@ class SimulationPage extends Component {
             </div>
           </div>
         </div>
-        <Modal show={displaySaveModal} clicked={this.handleCloseModal}>
+        <Modal
+          show={displaySaveModal}
+          clicked={this.handleCloseModal}
+          onClose={this.handleCloseModal}
+        >
           <SaveAlloyModal handleClose={this.handleCloseModal} />
         </Modal>
         <SignupModal show={!isAuthenticated} redirect={history.push} />

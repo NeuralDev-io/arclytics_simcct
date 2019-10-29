@@ -58,7 +58,7 @@ class UserProfileConfig extends Component {
         <div className={`input-row ${styles.config}`}>
           <div className={styles.titleContainer}>
             <span>Start temperature</span>
-            <Tooltip className={{ tooltip: `${styles.infoTip} ${styles.methodTooltip}`, container: styles.infoTipContainer }} position="right">
+            <Tooltip className={{ container: styles.infoTipContainer }}>
               <BrainIcon className={styles.infoIcon} />
               <p>
                 Test
@@ -79,7 +79,7 @@ class UserProfileConfig extends Component {
         <div className={`input-row ${styles.config}`}>
           <div className={styles.titleContainer}>
             <span>CCT cooling rate</span>
-            <Tooltip className={{ tooltip: `${styles.infoTip} ${styles.methodTooltip}`, container: styles.infoTipContainer }} position="right">
+            <Tooltip className={{ container: styles.infoTipContainer }}>
               <BrainIcon className={styles.infoIcon} />
               <p>
                 Test

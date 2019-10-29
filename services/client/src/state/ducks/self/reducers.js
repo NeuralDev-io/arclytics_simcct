@@ -6,6 +6,7 @@ import {
   SAVE_SIM,
   GET_SIM,
   GET_LAST_SIM,
+  DELETE_SIM,
 } from './types'
 
 const initialState = {
@@ -108,6 +109,15 @@ const reducer = (state = initialState, action) => {
         }
       }
       break
+    }
+    case DELETE_SIM: {
+      return {
+        ...state,
+        savedSimulations: {
+          ...state.savedSimulations,
+          data: state.savedSimulations.data.filter(sim => sim._id !== action.payload), // eslint-disable-line
+        },
+      }
     }
     case GET_LAST_SIM:
       return {

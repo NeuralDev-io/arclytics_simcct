@@ -16,3 +16,11 @@ div#temp-container {
   z-index: -1;
   pointer-events: none;
 }
+
+div#tooltip-container {
+  z-index: 2;
+}
+
+div#modal-container {
+  z-index: 1;
+}

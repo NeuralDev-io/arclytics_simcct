@@ -9,7 +9,6 @@
     display: flex;
     align-items: center;
     margin-right: 1.5rem;
-    //width: 14rem;
 
     & > span {
       width: 8rem;
@@ -27,18 +26,12 @@
   height: 1rem;
   stroke: var(--arc500);
   cursor: pointer;
-  position: absolute;
-  top: 0;
-}
-
-.infoTip {
-  width: max-content;
-  max-width: 35rem;
 }
 
 .infoTipContainer {
   width: 1rem;
   height: 1rem;
+  line-height: 1rem;
 }
 
 .methodTooltip {

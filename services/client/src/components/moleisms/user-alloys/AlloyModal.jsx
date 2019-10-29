@@ -152,7 +152,6 @@ class AlloyModal extends Component {
             length="short"
             onChange={val => this.handleCompWeightChange(element.symbol, val)}
             error={error.compositions[element.symbol]}
-            errorTooltipPosition="left"
           />
         </div>
       )
@@ -189,7 +188,6 @@ class AlloyModal extends Component {
                 length="stretch"
                 value={alloy.name}
                 error={error.name}
-                errorTooltipPosition="left"
               />
             </div>
             <div className={styles.elementContainer}>

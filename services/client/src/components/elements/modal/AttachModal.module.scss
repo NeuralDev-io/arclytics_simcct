@@ -18,14 +18,14 @@
 
   &.visible {
     opacity: 1;
-    z-index: 9999;
+    z-index: 1;
     pointer-events: auto;
   }
 }
 
 .modalContainer {
   position: relative;
-  z-index: 9999;
+  z-index: 1;
 }
 
 .bottomLeft {

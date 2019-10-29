@@ -24,6 +24,12 @@ export const constraints = {
       message: 'Carbon can\'t weigh more than 0.8',
     },
   ],
+  name: [
+    {
+      check: val => val.trim() !== '',
+      message: 'Name is required',
+    },
+  ],
 }
 
 export default constraints

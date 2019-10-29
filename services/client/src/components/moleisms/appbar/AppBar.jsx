@@ -12,6 +12,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
+import MuiTooltip from '@material-ui/core/Tooltip'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOut } from '@fortawesome/pro-light-svg-icons/faSignOut'
 import { faUser } from '@fortawesome/pro-light-svg-icons/faUser'
@@ -69,17 +70,17 @@ class AppBar extends React.Component {
             className={`${styles.navIcon} ${active === 'sim' && styles.active}`}
             to="/"
           >
-            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <SimulationIcon className={styles.simIcon}/>
+            <Tooltip space={12}>
+              <SimulationIcon className={styles.simIcon} />
               <p>Simulation</p>
             </Tooltip>
           </Link>
           <Link
             id="equilibrium"
-            className={`${styles.navIcon} ${active === 'equilibrium' && styles.active}`}
-            to="/equilibrium"
+            className={`${styles.navIcon} ${active === 'equilibrium' && styles.active} ${!isAuthenticated && styles.disabled}`}
+            to={isAuthenticated ? '/user/simulations' : ''}
           >
-            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+            <Tooltip space={12}>
               <FontAwesomeIcon icon={faSlidersV} className={styles.icon} size="lg" />
               <p>Equilibrium</p>
             </Tooltip>
@@ -89,7 +90,7 @@ class AppBar extends React.Component {
             className={`${styles.navIcon} ${active === 'savedSimulations' && styles.active} ${!isAuthenticated && styles.disabled}`}
             to={isAuthenticated ? '/user/simulations' : ''}
           >
-            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+            <Tooltip space={12}>
               <FontAwesomeIcon icon={faFileChartLine} className={styles.icon} size="lg" />
               <p>Saved simulations</p>
             </Tooltip>
@@ -99,7 +100,7 @@ class AppBar extends React.Component {
             className={`${styles.navIcon} ${active === 'userAlloys' && styles.active} ${!isAuthenticated && styles.disabled}`}
             to={isAuthenticated ? '/user/alloys' : ''}
           >
-            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+            <Tooltip space={12}>
               <FontAwesomeIcon icon={faDatabase} className={styles.icon} size="lg" />
               <p>Alloy database</p>
             </Tooltip>
@@ -132,7 +133,7 @@ class AppBar extends React.Component {
             style={{ display: isAdmin ? 'flex' : 'none' }}
             to="/analytics/users"
           >
-            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+            <Tooltip space={12}>
               <FontAwesomeIcon icon={faAnalytics} className={styles.icon} size="lg" />
               <p>Data & analytics</p>
             </Tooltip>
@@ -144,7 +145,7 @@ class AppBar extends React.Component {
             style={{ display: isAdmin ? 'flex' : 'none' }}
             to="/feedback"
           >
-            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+            <Tooltip space={12}>
               <FontAwesomeIcon icon={faCommentAltLines} className={styles.icon} size="lg" />
               <p>Feedback</p>
             </Tooltip>
@@ -156,7 +157,7 @@ class AppBar extends React.Component {
             style={{ display: isAdmin ? 'flex' : 'none' }}
             to="/admin/analytics"
           >
-            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+            <Tooltip space={12}>
               <FontAwesomeIcon icon={faUserCog} className={styles.icon} size="lg" />
               <p>Admin</p>
             </Tooltip>
@@ -168,7 +169,7 @@ class AppBar extends React.Component {
             className={`${styles.navIcon} ${active === 'user' && styles.active} ${!isAuthenticated && styles.disabled}`}
             to={isAuthenticated ? '/user/profile' : ''}
           >
-            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+            <Tooltip space={12}>
               <FontAwesomeIcon icon={faUser} className={styles.icon} size="lg" />
               <p>Account</p>
             </Tooltip>
@@ -181,7 +182,7 @@ class AppBar extends React.Component {
               return {}
             })()}
           >
-            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+            <Tooltip space={12}>
               <FontAwesomeIcon icon={faSignOut} className={styles.icon} size="lg" />
               <p>Logout</p>
             </Tooltip>
@@ -192,7 +193,7 @@ class AppBar extends React.Component {
             className={`${styles.navIcon} ${active === 'about' && styles.active}`}
             to="/about/arclytics"
           >
-            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+            <Tooltip space={12}>
               <FontAwesomeIcon icon={faQuestionCircle} className={styles.icon} size="lg" />
               <p>About</p>
             </Tooltip>

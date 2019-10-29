@@ -140,6 +140,10 @@ const createAlloy = (type, alloy) => dispatch => (
             _id: res.data._id, // eslint-disable-line
           },
         })
+        addFlashToast({
+          message: `Alloy ${alloy.name} created`,
+          options: { variant: 'success' },
+        }, true)(dispatch)
       }
     })
     .catch((err) => {

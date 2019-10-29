@@ -6,6 +6,7 @@ import {
   SAVE_SIM,
   GET_SIM,
   GET_LAST_SIM,
+  DELETE_SIM,
 } from './types'
 import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
@@ -361,6 +362,66 @@ export const getSavedSimulations = () => (dispatch) => {
       logError(err.toString(), err.message, 'self.actions.getSavedSimulations', err.stack)
     })
 }
+
+/**
+ * API call to `users` server to retrieve the user's list of saved simulations.
+ * Returns a list of saved simulations as an `application/json` content-type
+ * with the following schema:
+ *
+ * {
+ *    "status": "success",
+ *    "data": [
+ *      {"_id": "ObjectId", "configurations": {...}, "alloy_store": {...}},
+ *      {...},
+ *      {...}
+ *    ]
+ * }
+ */
+export const deleteSavedSimulation = id => (dispatch) => (
+  fetch(`${SIMCCT_URL}/user/simulation/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }).then((res) => {
+    if (res.status === 404) {
+      return {
+        status: 'fail',
+        message: 'This simulation no longer exists in your account',
+      }
+    }
+    if (res.status !== 202) {
+      return {
+        status: 'fail',
+        message: 'Couldn\'t delete this simulation',
+      }
+    }
+    return res.json()
+  })
+    .then((res) => {
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
+      if (res.status === 'success') {
+        addFlashToast({
+          message: 'Simulation deleted',
+          options: { variant: 'success' },
+        }, true)(dispatch)
+        dispatch({
+          type: DELETE_SIM,
+          payload: id,
+        })
+      }
+    })
+    .catch((err) => {
+      // log to fluentd
+      logError(err.toString(), err.message, 'self.actions.deleteSavedSimulation', err.stack)
+    })
+)
 
 /**
  * Save the current sim to a user in the backend.

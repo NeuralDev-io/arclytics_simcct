@@ -3,13 +3,12 @@
   height: 100vh;
   margin-left: 4rem;
   position: fixed;
-  z-index: 9999;
 }
 
 .main {
   margin-left: calc(4rem + 20rem);
   width: calc(100vw - calc(4rem + 20rem));
-  padding: 2rem 2.5rem 2.5rem 2.5rem;
+  padding: 2rem 2.5rem 8rem 2.5rem;
 
   header {
     display: flex;
@@ -58,7 +57,7 @@
         flex-basis: 45%;
         min-height: 28rem;
         max-height: 35rem;
-        z-index: 1001;
+        // z-index: 1;
         position: relative;
         display: flex;
         flex-flow: column;

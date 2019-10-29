@@ -16,7 +16,8 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Formik } from 'formik'
 import { Link } from 'react-router-dom'
-import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
+import { ReactComponent as LogoLight } from '../../../assets/logo_20.svg'
+import { ReactComponent as LogoDark } from '../../../assets/logo_20_dark.svg'
 import { login, checkAuthStatus } from '../../../api/AuthenticationHelper'
 import { loginValidation } from '../../../utils/ValidationHelper'
 import ForgotPassword from '../../moleisms/forgot-password'
@@ -24,6 +25,7 @@ import TextField from '../../elements/textfield'
 import Modal from '../../elements/modal'
 import Button from '../../elements/button'
 import { buttonize } from '../../../utils/accessibility'
+import { SUPPORTED_THEMES } from '../../../utils/theming'
 
 import styles from './LoginPage.module.scss'
 import { logError, logInfo } from '../../../api/LoggingHelper'
@@ -92,10 +94,19 @@ class LoginPage extends Component {
       fadeLogin = (hasForgotPwd ? styles.fadeLeftOut : styles.fadeRightIn)
     }
 
+    let theme = localStorage.getItem('theme') || ''
+    if (!SUPPORTED_THEMES.includes(theme)) {
+      theme = 'light'
+    }
+
     return (
       <div className={styles.outer}>
         <div className={styles.logoContainer}>
-          <Logo className={styles.logo} />
+          {
+            theme === 'light'
+              ? <LogoLight className={styles.logo} />
+              : <LogoDark className={styles.logo} />
+          }
           <h3>ARCLYTICS</h3>
         </div>
         {this.handleExpiredToken()}
@@ -174,12 +185,12 @@ class LoginPage extends Component {
                         <Link className={styles.createAccount} to="/signup">Sign up</Link>
                         {' '}
                       </h6>
-                      <h6
+                      <a
                         className={styles.help}
                         {...buttonize(() => this.setState({ hasForgotPwd: true }))}
                       >
                         Trouble signing in?
-                      </h6>
+                      </a>
                     </div>
                     <div className={styles.clear}>
                       <Button

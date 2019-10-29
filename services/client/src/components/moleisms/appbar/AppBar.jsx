@@ -12,7 +12,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import MuiTooltip from '@material-ui/core/Tooltip'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOut } from '@fortawesome/pro-light-svg-icons/faSignOut'
 import { faUser } from '@fortawesome/pro-light-svg-icons/faUser'
@@ -25,15 +24,17 @@ import { faFileChartLine } from '@fortawesome/pro-light-svg-icons/faFileChartLin
 import { faCommentAltLines } from '@fortawesome/pro-light-svg-icons/faCommentAltLines'
 import { ReactComponent as SimulationIcon } from '../../../assets/simulation_icon.svg'
 import { ReactComponent as ANSTOLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
-import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
+import { ReactComponent as LogoLight } from '../../../assets/logo_20.svg'
+import { ReactComponent as LogoDark } from '../../../assets/logo_20_dark.svg'
 import store from '../../../state/store'
 import Tooltip from '../../elements/tooltip'
 import { buttonize } from '../../../utils/accessibility'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
 import { saveLastSim } from '../../../state/ducks/self/actions'
 import { logout } from '../../../api/AuthenticationHelper'
-
 import { logError } from '../../../api/LoggingHelper'
+import { SUPPORTED_THEMES } from '../../../utils/theming'
+
 import styles from './AppBar.module.scss'
 
 class AppBar extends React.Component {
@@ -60,6 +61,11 @@ class AppBar extends React.Component {
       isAdmin,
       isAuthenticated,
     } = this.props
+
+    let theme = localStorage.getItem('theme') || ''
+    if (!SUPPORTED_THEMES.includes(theme)) {
+      theme = 'light'
+    }
 
     return (
       <nav className={styles.navContainer}>
@@ -199,7 +205,11 @@ class AppBar extends React.Component {
             </Tooltip>
           </Link>
 
-          <Logo className={styles.logo} />
+          {
+            theme === 'light'
+              ? <LogoLight className={styles.logo} />
+              : <LogoDark className={styles.logo} />
+          }
         </div>
       </nav>
     )

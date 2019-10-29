@@ -11,10 +11,12 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import { forgotPasswordEmail } from '../../../utils/ValidationHelper'
 import { forgotPassword } from '../../../api/AuthenticationHelper'
+import { addFlashToast } from '../../../state/ducks/toast/actions'
 import { buttonize } from '../../../utils/accessibility'
 import { logError } from '../../../api/LoggingHelper'
 
@@ -38,6 +40,7 @@ class ForgotPassword extends Component {
 
   handleForgotPasswordEmail = () => {
     const { forgotEmail } = this.state
+    const { addFlashToastConnect } = this.props
     const validError = forgotPasswordEmail(forgotEmail)
     if (validError === '') {
       const promise = new Promise((resolve, reject) => {
@@ -49,6 +52,10 @@ class ForgotPassword extends Component {
           forgotPwdErr: '',
           emailSent: true,
         })
+        addFlashToastConnect({
+          message: 'Email sent',
+          options: { variant: 'success' },
+        }, true)
       })
         .catch((err) => {
           // If response is unsuccessful
@@ -69,7 +76,7 @@ class ForgotPassword extends Component {
     const { forgotPwdHandler } = this.props
     return (
       <>
-        <h3 className={styles.header}>Reset your password </h3>
+        <h3 className={styles.header}>Reset your password</h3>
         <span> Enter your email to send a password reset email.</span>
         <TextField
           name="forgotEmail"
@@ -80,25 +87,19 @@ class ForgotPassword extends Component {
           error={forgotPwdErr}
           length="stretch"
         />
-        <div>
-          <h6 className={styles.confirmation}>
-            {emailSent ? ('Email has been sent.') : ('')}
-            &nbsp;
-          </h6>
-          <div className={styles.buttonGroup}>
-            <Button
-              className={styles.forgotSubmit}
-              type="submit"
-              length="long"
-              isDisabled={emailSent}
-              onClick={this.handleForgotPasswordEmail}
-            >
-              Send Email
-            </Button>
-            <h6{...buttonize(forgotPwdHandler)}>
-              Go back to login
-            </h6>
-          </div>
+        <div className={styles.buttonGroup}>
+          <Button
+            className={styles.forgotSubmit}
+            type="submit"
+            length="long"
+            isDisabled={emailSent}
+            onClick={this.handleForgotPasswordEmail}
+          >
+            Send Email
+          </Button>
+          <a {...buttonize(forgotPwdHandler)}>
+            Go back to login
+          </a>
         </div>
       </>
     )
@@ -107,6 +108,11 @@ class ForgotPassword extends Component {
 
 ForgotPassword.propTypes = {
   forgotPwdHandler: PropTypes.func.isRequired,
+  addFlashToastConnect: PropTypes.func.isRequired,
 }
 
-export default ForgotPassword
+const mapDispatchToProps = {
+  addFlashToastConnect: addFlashToast,
+}
+
+export default connect(null, mapDispatchToProps)(ForgotPassword)

@@ -9,6 +9,12 @@
   color: var(--n0);
 }
 
+html[data-theme="dark"] {
+  .snackbar__button {
+    color: var(--n900);
+  }
+}
+
 div#temp-container {
   position: fixed;
   top: 0;

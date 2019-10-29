@@ -77,8 +77,8 @@ class AppBar extends React.Component {
           </Link>
           <Link
             id="equilibrium"
-            className={`${styles.navIcon} ${active === 'equilibrium' && styles.active}`}
-            to="/equilibrium"
+            className={`${styles.navIcon} ${active === 'equilibrium' && styles.active} ${!isAuthenticated && styles.disabled}`}
+            to={isAuthenticated ? '/user/simulations' : ''}
           >
             <Tooltip space={12}>
               <FontAwesomeIcon icon={faSlidersV} className={styles.icon} size="lg" />

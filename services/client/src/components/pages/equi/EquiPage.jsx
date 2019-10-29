@@ -16,6 +16,7 @@ import { Equilibrium } from '../../moleisms/charts'
 import { loadPersistedSim, loadLastSim } from '../../../state/ducks/sim/actions'
 import { getLastSim } from '../../../state/ducks/self/actions'
 import { persistSim } from '../../../state/ducks/persist/actions'
+import { roundTo } from '../../../utils/math'
 import { logError } from '../../../api/LoggingHelper'
 
 import styles from './EquiPage.module.scss'
@@ -80,15 +81,18 @@ class EquiPage extends React.Component {
             <div className={styles.configs}>
               <div>
                 <h6 className={styles.configLabel}>Ferrite phase fraction</h6>
-                <span>{xfe}</span>
+                <span>{roundTo(xfe, 2)}</span>
               </div>
               <div>
-                <h6 className={styles.configLabel}>Eutectic Carbon content wt.</h6>
-                <span>{ceut}</span>
+                <h6 className={styles.configLabel}>Eutectic Carbon content</h6>
+                <span>
+                  {roundTo(ceut, 2)}
+                  &nbsp;&nbsp;wt%
+                </span>
               </div>
               <div>
-                <h6 className={styles.configLabel}>Cf</h6>
-                <span>{cf}</span>
+                <h6 className={styles.configLabel}>Ferrite Carbon fraction</h6>
+                <span>{roundTo(cf, 2)}</span>
               </div>
             </div>
           </section>

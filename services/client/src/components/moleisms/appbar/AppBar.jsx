@@ -11,7 +11,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, withRouter } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOut } from '@fortawesome/pro-light-svg-icons/faSignOut'
 import { faUser } from '@fortawesome/pro-light-svg-icons/faUser'
@@ -33,7 +33,6 @@ import { addFlashToast } from '../../../state/ducks/toast/actions'
 import { saveLastSim } from '../../../state/ducks/self/actions'
 import { logout } from '../../../api/AuthenticationHelper'
 import { logError } from '../../../api/LoggingHelper'
-import { SUPPORTED_THEMES } from '../../../utils/theming'
 
 import styles from './AppBar.module.scss'
 
@@ -61,6 +60,7 @@ class AppBar extends React.Component {
       isAdmin,
       isAuthenticated,
       theme,
+      location: { pathname },
     } = this.props
 
     return (
@@ -193,7 +193,10 @@ class AppBar extends React.Component {
           <Link
             id="about"
             className={`${styles.navIcon} ${active === 'about' && styles.active}`}
-            to="/about/arclytics"
+            to={{
+              pathname: '/about/application',
+              state: { from: pathname },
+            }}
           >
             <Tooltip space={12}>
               <FontAwesomeIcon icon={faQuestionCircle} className={styles.icon} size="lg" />
@@ -221,6 +224,9 @@ AppBar.propTypes = {
   addFlashToastConnect: PropTypes.func.isRequired,
   saveLastSimConnect: PropTypes.func.isRequired,
   theme: PropTypes.string.isRequired,
+  location: PropTypes.shape({
+    pathname: PropTypes.string,
+  }).isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -232,4 +238,4 @@ const mapDispatchToProps = {
   saveLastSimConnect: saveLastSim,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(AppBar)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AppBar))

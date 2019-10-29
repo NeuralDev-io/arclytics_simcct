@@ -46,18 +46,28 @@ class AboutSidebar extends Component {
   }
 
   handleBackToApp = () => {
-    const { redirect } = this.props
-    redirect('/')
+    const { redirect, from } = this.props
+    redirect(from)
   }
 
   render() {
     const { active } = this.state
+    const { from } = this.props
     return (
       <div className={styles.sidebar}>
         <h4>More information</h4>
+        {/*
+          Link components will redirect to correct about section but will persist
+          the 'from' location so that when user clicks on "Back to app" in
+          AboutSidebar they will go to the previous route before they went to
+          '/about/...'
+        */}
         <Link
           id="application"
-          to="/about/application"
+          to={{
+            pathname: '/about/application',
+            state: { from },
+          }}
           onClick={() => this.handleRedirect('application')}
           className={`${styles.item} ${active === 'application' && styles.active}`}
         >
@@ -66,7 +76,10 @@ class AboutSidebar extends Component {
         </Link>
         <Link
           id="disclaimer"
-          to="/about/disclaimer"
+          to={{
+            pathname: '/about/disclaimer',
+            state: { from },
+          }}
           onClick={() => this.handleRedirect('disclaimer')}
           className={`${styles.item} ${active === 'disclaimer' && styles.active}`}
         >
@@ -75,7 +88,10 @@ class AboutSidebar extends Component {
         </Link>
         <Link
           id="privacy"
-          to="/about/privacy"
+          to={{
+            pathname: '/about/privacy',
+            state: { from },
+          }}
           onClick={() => this.handleRedirect('privacy')}
           className={`${styles.item} ${active === 'privacy' && styles.active}`}
         >
@@ -84,7 +100,10 @@ class AboutSidebar extends Component {
         </Link>
         <Link
           id="privacy"
-          to="/about/acknowledgements"
+          to={{
+            pathname: '/about/acknowledgements',
+            state: { from },
+          }}
           onClick={() => this.handleRedirect('acknowledgements')}
           className={`${styles.item} ${active === 'acknowledgements' && styles.active}`}
         >
@@ -107,6 +126,7 @@ class AboutSidebar extends Component {
 
 AboutSidebar.propTypes = {
   redirect: PropTypes.func.isRequired,
+  from: PropTypes.string.isRequired,
 }
 
 export default AboutSidebar

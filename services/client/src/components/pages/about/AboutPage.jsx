@@ -22,13 +22,15 @@ import {
 
 import styles from './AboutPage.module.scss'
 
-function AboutPage({ history }) {
+function AboutPage({ history, location }) {
+  const { state = { from: '' } } = location
+  console.log(state.from)
   return (
     <>
       <AboutAppBar />
 
       <div className={styles.sidebar}>
-        <AboutSidebar redirect={history.push} />
+        <AboutSidebar redirect={history.push} from={state.from} />
       </div>
 
       <div className={styles.main} id="about-content">
@@ -43,6 +45,11 @@ function AboutPage({ history }) {
 
 AboutPage.propTypes = {
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      from: PropTypes.string.isRequired,
+    }),
+  }).isRequired,
 }
 
 export default AboutPage

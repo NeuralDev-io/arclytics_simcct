@@ -14,6 +14,7 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import { Link } from 'react-router-dom'
 import { ReactComponent as LogoLight } from '../../../assets/logo_20.svg'
@@ -86,17 +87,13 @@ class LoginPage extends Component {
     const {
       hasForgotPwd,
     } = this.state
+    const { theme } = this.props
 
     let fadeForgot = ('')
     let fadeLogin = ('')
     if (hasForgotPwd !== null) {
       fadeForgot = (hasForgotPwd ? styles.fadeLeftIn : styles.fadeRightOut)
       fadeLogin = (hasForgotPwd ? styles.fadeLeftOut : styles.fadeRightIn)
-    }
-
-    let theme = localStorage.getItem('theme') || ''
-    if (!SUPPORTED_THEMES.includes(theme)) {
-      theme = 'light'
     }
 
     return (
@@ -231,6 +228,11 @@ LoginPage.propTypes = {
       token: PropTypes.string,
     }),
   }).isRequired,
+  theme: PropTypes.string.isRequired,
 }
 
-export default LoginPage
+const mapStateToProps = (state) => ({
+  theme: state.self.theme,
+})
+
+export default connect(mapStateToProps, {})(LoginPage)

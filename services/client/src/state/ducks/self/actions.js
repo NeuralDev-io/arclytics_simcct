@@ -7,10 +7,12 @@ import {
   GET_SIM,
   GET_LAST_SIM,
   DELETE_SIM,
+  CHANGE_THEME,
 } from './types'
 import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
 import { logError } from '../../../api/LoggingHelper'
+import { changeTheme } from '../../../utils/theming'
 
 /**
  * Make API request to retrieve user profile.
@@ -522,3 +524,17 @@ export const getLastSim = () => dispatch => (
       logError(err.toString(), err.message, 'self.actions.getLastSim', err.stack)
     })
 )
+
+/**
+ * Change theme variable in Redux store so that logo components can be
+ * updated across the app
+ * @param {string} theme new theme name
+ */
+export const changeThemeRedux = theme => (dispatch) => {
+  localStorage.setItem('theme', theme)
+  dispatch({
+    type: CHANGE_THEME,
+    payload: theme,
+  })
+  changeTheme(theme)
+}

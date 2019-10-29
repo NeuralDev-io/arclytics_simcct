@@ -60,12 +60,8 @@ class AppBar extends React.Component {
       active,
       isAdmin,
       isAuthenticated,
+      theme,
     } = this.props
-
-    let theme = localStorage.getItem('theme') || ''
-    if (!SUPPORTED_THEMES.includes(theme)) {
-      theme = 'light'
-    }
 
     return (
       <nav className={styles.navContainer}>
@@ -224,11 +220,16 @@ AppBar.propTypes = {
   // from connect
   addFlashToastConnect: PropTypes.func.isRequired,
   saveLastSimConnect: PropTypes.func.isRequired,
+  theme: PropTypes.string.isRequired,
 }
+
+const mapStateToProps = state => ({
+  theme: state.self.theme,
+})
 
 const mapDispatchToProps = {
   addFlashToastConnect: addFlashToast,
   saveLastSimConnect: saveLastSim,
 }
 
-export default connect(null, mapDispatchToProps)(AppBar)
+export default connect(mapStateToProps, mapDispatchToProps)(AppBar)

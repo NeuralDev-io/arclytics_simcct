@@ -8,6 +8,7 @@ import {
   GET_LAST_SIM,
   DELETE_SIM,
 } from './types'
+import { SUPPORTED_THEMES } from '../../../utils/theming'
 
 const initialState = {
   user: {
@@ -25,9 +26,32 @@ const initialState = {
     data: [],
   },
   lastSim: {},
+  // default theme when the app starts is the theme stored in localStorage
+  // if theme in localStorage is invalid then default it to light
+  theme: 'light',
 }
 
-const reducer = (state = initialState, action) => {
+/**
+ * This function gets the theme from localStorage.
+ * If theme is invalid, it sets theme in localStorage to default
+ * as 'light
+ */
+const getStorageTheme = () => {
+  const theme = localStorage.getItem('theme') || ''
+  if (!SUPPORTED_THEMES.includes(theme)) {
+    localStorage.setItem('theme', 'light')
+    return 'light'
+  }
+  return theme
+}
+
+const reducer = (
+  state = {
+    ...initialState,
+    theme: getStorageTheme(),
+  },
+  action,
+) => {
   switch (action.type) {
     case GET_USER_PROFILE:
       return {
@@ -123,6 +147,11 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         lastSim: action.payload,
+      }
+    case 'self/CHANGE_THEME':
+      return {
+        ...state,
+        theme: action.payload,
       }
     default:
       return state

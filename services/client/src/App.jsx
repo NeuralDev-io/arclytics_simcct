@@ -70,6 +70,7 @@ function App() {
       theme = 'light'
     }
     changeTheme(theme)
+    store.dispatch({ type: 'self/CHANGE_THEME', payload: theme })
   }, [])
   const classes = useStyles()
   const matches = useMediaQuery('(max-width: 1280px)')

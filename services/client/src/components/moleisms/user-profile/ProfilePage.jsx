@@ -12,11 +12,11 @@ import {
   getUserProfile,
   createUserProfile,
   updateUserProfile,
+  changeThemeRedux,
 } from '../../../state/ducks/self/actions'
 import TextField from '../../elements/textfield'
 import Select from '../../elements/select'
 import Button from '../../elements/button'
-import { changeTheme, SUPPORTED_THEMES } from '../../../utils/theming'
 import LightThemeImg from '../../../assets/theme-images/light.png'
 import DarkThemeImg from '../../../assets/theme-images/dark.png'
 import { buttonize } from '../../../utils/accessibility'
@@ -26,10 +26,6 @@ import styles from './ProfilePage.module.scss'
 class ProfilePage extends Component {
   constructor(props) {
     super(props)
-    let currentTheme = localStorage.getItem('theme') || ''
-    if (!SUPPORTED_THEMES.includes(currentTheme)) {
-      currentTheme = 'light'
-    }
 
     this.state = {
       firstName: '',
@@ -62,7 +58,6 @@ class ProfilePage extends Component {
       ],
       updateError: null,
       edit: false,
-      currentTheme,
     }
   }
 
@@ -162,12 +157,6 @@ class ProfilePage extends Component {
     }
   }
 
-  handleChangeTheme = (theme) => {
-    changeTheme(theme)
-    localStorage.setItem('theme', theme)
-    this.setState({ currentTheme: theme })
-  }
-
   render() {
     const {
       firstName,
@@ -182,8 +171,8 @@ class ProfilePage extends Component {
       phaseTransformOptions,
       updateError,
       edit,
-      currentTheme,
     } = this.state
+    const { theme, changeThemeReduxConnect } = this.props
 
     return (
       <div className={styles.main}>
@@ -304,8 +293,8 @@ class ProfilePage extends Component {
         <h3>Theme</h3>
         <div className={styles.themeContainer}>
           <div
-            className={`${styles.theme} ${currentTheme === 'light' ? styles.active : ''}`}
-            {...buttonize(() => this.handleChangeTheme('light'))}
+            className={`${styles.theme} ${theme === 'light' ? styles.active : ''}`}
+            {...buttonize(() => changeThemeReduxConnect('light'))}
           >
             <div className={styles.themeImg}>
               <img src={LightThemeImg} alt="light-theme" />
@@ -313,8 +302,8 @@ class ProfilePage extends Component {
             <h5>Light</h5>
           </div>
           <div
-            className={`${styles.theme} ${currentTheme === 'dark' ? styles.active : ''}`}
-            {...buttonize(() => this.handleChangeTheme('dark'))}
+            className={`${styles.theme} ${theme === 'dark' ? styles.active : ''}`}
+            {...buttonize(() => changeThemeReduxConnect('dark'))}
           >
             <div className={styles.themeImg}>
               <img src={DarkThemeImg} alt="dark-theme" />
@@ -348,18 +337,20 @@ ProfilePage.propTypes = {
   updateUserProfileConnect: PropTypes.func.isRequired,
   createUserProfileConnect: PropTypes.func.isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+  theme: PropTypes.string.isRequired,
+  changeThemeReduxConnect: PropTypes.func.isRequired,
 }
-
 
 const mapStateToProps = state => ({
   user: state.self.user,
+  theme: state.self.theme,
 })
 
 const mapDispatchToProps = {
   getUserProfileConnect: getUserProfile,
   updateUserProfileConnect: updateUserProfile,
   createUserProfileConnect: createUserProfile,
+  changeThemeReduxConnect: changeThemeRedux,
 }
-
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProfilePage)

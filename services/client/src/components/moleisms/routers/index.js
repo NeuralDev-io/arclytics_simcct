@@ -4,3 +4,4 @@ export {
   DemoRoute,
   ShareRoute,
 } from './Route'
+export { default as Redirector } from './Redirector'

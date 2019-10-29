@@ -25,6 +25,7 @@ import {
   AdminRoute,
   DemoRoute,
   ShareRoute,
+  Redirector,
 } from './components/moleisms/routers'
 import Toaster from './components/moleisms/toaster'
 import FeedbackModal, { RatingModal } from './components/moleisms/feedback'
@@ -93,6 +94,7 @@ function App() {
           <div id="temp-container" />
           <Toaster />
           <div className="App" id="app">
+            <Redirector />
             <FeedbackModal />
             <RatingModal />
             <Switch>

@@ -12,8 +12,10 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { PERIODIC_TABLE_DATA } from '../../../utils/alloys'
+import { connect } from 'react-redux'
+import { PERIODIC_TABLE_DATA, DEFAULT_ELEMENTS } from '../../../utils/alloys'
 import { buttonize } from '../../../utils/accessibility'
+import { addFlashToast } from '../../../state/ducks/toast/actions'
 
 import styles from './PeriodicTable.module.scss'
 
@@ -26,12 +28,26 @@ class PeriodicTable extends Component {
   }
 
   handleToggleElement = (number) => {
-    const { elements, onToggleElement } = this.props
-    let newElements = [...elements]
+    // find data of this element
+    const element = PERIODIC_TABLE_DATA.find(elem => elem.number === number)
+
+    const { elements, onToggleElement, addFlashToastConnect } = this.props
+    let newElements = []
     if (elements.includes(number)) {
-      newElements = newElements.filter(n => n !== number)
+      // don't let them toggle off required elements
+      if (DEFAULT_ELEMENTS.includes(element.symbol)) {
+        addFlashToastConnect({
+          message: `${element.name} (${element.symbol}) is required.`,
+          options: { variant: 'error' },
+        }, true)
+        return
+      }
+      newElements = elements.filter(n => n !== number)
     } else {
-      newElements.push(number)
+      newElements = [
+        ...elements,
+        number,
+      ]
     }
     onToggleElement(number, newElements)
   }
@@ -113,10 +129,15 @@ class PeriodicTable extends Component {
 PeriodicTable.propTypes = {
   elements: PropTypes.arrayOf(PropTypes.number),
   onToggleElement: PropTypes.func.isRequired,
+  addFlashToastConnect: PropTypes.func.isRequired,
 }
 
 PeriodicTable.defaultProps = {
   elements: [],
 }
 
-export default PeriodicTable
+const mapDispatchToProps = {
+  addFlashToastConnect: addFlashToast,
+}
+
+export default connect(null, mapDispatchToProps)(PeriodicTable)

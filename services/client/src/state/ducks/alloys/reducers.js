@@ -146,7 +146,7 @@ const reducer = (state = initialState, action) => {
         ...state,
         user: {
           ...state.user,
-          data: state.global.data.map((alloy) => {
+          data: state.user.data.map((alloy) => {
             if (alloy._id === action.payload._id) { // eslint-disable-line
               return {
                 ...alloy,

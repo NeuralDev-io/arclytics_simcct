@@ -13,7 +13,7 @@
  */
 /* eslint-disable react/jsx-props-no-spreading */
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Provider } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
 import { SnackbarProvider } from 'notistack'
@@ -46,6 +46,7 @@ import AnalyticsPage from './components/pages/analytics'
 import AboutPage from './components/pages/about'
 import FeedbackPage from './components/pages/feedback'
 import MobilePage from './components/pages/mobile'
+import { changeTheme } from './utils/theming'
 
 /*
 * DECISION:
@@ -62,6 +63,10 @@ const useStyles = makeStyles({
 })
 
 function App() {
+  useEffect(() => {
+    const theme = localStorage.getItem('theme') || ''
+    changeTheme(theme)
+  }, [])
   const classes = useStyles()
   const matches = useMediaQuery('(max-width: 1280px)')
 

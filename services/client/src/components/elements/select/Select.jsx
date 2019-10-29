@@ -106,6 +106,7 @@ const Select = (props) => {
         ...theme,
         colors: {
           ...theme.colors,
+          neutral0: getColor('--n0'),
           primary: getColor('--arc500'),
           primary25: getColor('--arc50'),
         },

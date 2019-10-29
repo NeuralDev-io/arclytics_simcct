@@ -20,7 +20,7 @@ import { faTimes } from '@fortawesome/pro-light-svg-icons/faTimes'
 import Button, { IconButton } from '../../elements/button'
 import Table from '../../elements/table'
 import { getColor } from '../../../utils/theming'
-import { getSavedSimulations } from '../../../state/ducks/self/actions'
+import { getSavedSimulations, deleteSavedSimulation } from '../../../state/ducks/self/actions'
 import { loadSimFromAccount } from '../../../state/ducks/sim/actions'
 
 import styles from './UserSavedSimulations.module.scss'
@@ -54,10 +54,18 @@ class UserSavedSimulations extends Component {
     this.setState({ showSideView: true, currentSim: { _id: sim._id } })
     setTimeout(() => {
       this.setState({
-        // showSideView: true,
         currentSim: sim,
       })
     }, 500)
+  }
+
+  handleDeleteSim = () => {
+    const { deleteSavedSimulationConnect } = this.props
+    const { currentSim: { _id: id } } = this.state
+    deleteSavedSimulationConnect(id)
+      .then(() => {
+        this.handleCloseSideView()
+      })
   }
 
   handleCloseSideView = () => {
@@ -154,7 +162,7 @@ class UserSavedSimulations extends Component {
           </pre>
           <div className={styles.sideActions}>
             <Button
-              onClick={() => {}}
+              onClick={this.handleDeleteSim}
               appearance="text"
               color="dangerous"
               IconComponent={props => <FontAwesomeIcon icon={faTrashAlt} {...props} />}
@@ -185,6 +193,7 @@ UserSavedSimulations.propTypes = {
   dataFetched: PropTypes.bool.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   getSavedSimulationsConnect: PropTypes.func.isRequired,
+  deleteSavedSimulationConnect: PropTypes.func.isRequired,
   loadSimFromAccountConnect: PropTypes.func.isRequired,
 }
 
@@ -197,6 +206,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = {
   getSavedSimulationsConnect: getSavedSimulations,
   loadSimFromAccountConnect: loadSimFromAccount,
+  deleteSavedSimulationConnect: deleteSavedSimulation,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserSavedSimulations)

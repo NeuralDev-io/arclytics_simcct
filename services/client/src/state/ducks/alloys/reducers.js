@@ -70,14 +70,19 @@ const reducer = (state = initialState, action) => {
       }
     }
     case UPDATE_GLOBAL_ALLOY: {
-      const newAlloys = [...state.global.data]
-      const idx = newAlloys.findIndex(a => a._id === action.payload._id) // eslint-disable-line
-      newAlloys[idx] = action.payload
       return {
         ...state,
         global: {
           ...state.global,
-          data: newAlloys,
+          data: state.global.data.map((alloy) => {
+            if (alloy._id === action.payload._id) { // eslint-disable-line
+              return {
+                ...alloy,
+                ...action.payload,
+              }
+            }
+            return alloy
+          }),
         },
       }
     }
@@ -137,14 +142,19 @@ const reducer = (state = initialState, action) => {
       }
     }
     case UPDATE_USER_ALLOY: {
-      const newAlloys = [...state.user.data]
-      const idx = newAlloys.findIndex(a => a._id === action.payload._id) // eslint-disable-line
-      newAlloys[idx] = action.payload
       return {
         ...state,
         user: {
           ...state.user,
-          data: newAlloys,
+          data: state.global.data.map((alloy) => {
+            if (alloy._id === action.payload._id) { // eslint-disable-line
+              return {
+                ...alloy,
+                ...action.payload,
+              }
+            }
+            return alloy
+          }),
         },
       }
     }

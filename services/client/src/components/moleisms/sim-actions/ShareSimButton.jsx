@@ -22,6 +22,7 @@ import { getShareUrlLink, sendShareEmail } from '../../../api/sim/SessionShareSi
 import { addFlashToast } from '../../../state/ducks/toast/actions'
 
 import styles from './ShareSimButton.module.scss'
+import { faSignalStream } from '@fortawesome/pro-light-svg-icons'
 
 class ShareSimButton extends Component {
   constructor(props) {
@@ -30,6 +31,7 @@ class ShareSimButton extends Component {
       linkCopyDisabled: true,
       shareUrlLink: '',
       showCopied: false,
+      showSent: false,
       emails: [],
       currentEmail: '',
       emailError: '',
@@ -146,17 +148,20 @@ class ShareSimButton extends Component {
     sendShareEmail(
       emails, message, validConfigs, alloyStore, simResults,
     ).then(() => {
-      setTimeout(this.handleCloseModal, 200)
-      setTimeout(() => addFlashToastConnect({
-        message: 'Simulation shared successfully',
-        options: { variant: 'success' },
-      }, true), 500)
-      this.setState({
-        emails: [],
-        currentEmail: '',
-        message: '',
-        emailError: '',
-      })
+      this.setState({ showSent: true })
+      setTimeout(() => {
+        this.handleCloseModal()
+      }, 1000)
+      setTimeout(() => {
+        this.setState({
+          showSent: false,
+          visible: false,
+          emails: [],
+          currentEmail: '',
+          message: '',
+          emailError: '',
+        })
+      }, 2000)
     }).catch(() => {
       addFlashToastConnect({
         message: 'Something went wrong',
@@ -199,6 +204,7 @@ class ShareSimButton extends Component {
       linkCopyDisabled,
       shareUrlLink,
       showCopied,
+      showSent,
       emails,
       currentEmail,
       emailError,
@@ -242,7 +248,7 @@ class ShareSimButton extends Component {
                     emails={emails}
                     current={currentEmail}
                     error={emailError}
-                    placeholder="Emails (separate with commas)"
+                    placeholder="Emails (Press Tab/Enter to finish entering an email)"
                     length="stretch"
                   />
                   <div className={styles.message}>
@@ -259,13 +265,16 @@ class ShareSimButton extends Component {
                 <div className={styles.emailButtonContainer}>
                   <Button
                     onClick={this.onEmailSubmit}
+                    className={`${styles.customBtn} ${showSent ? styles.active : ''}`}
                     name="emailSubmit"
                     type="button"
                     appearance="outline"
                     length="long"
                     isDisabled={emails === undefined || emails.length === 0}
                   >
-                    SEND
+                    {
+                      showSent ? 'Sent!' : 'SEND'
+                    }
                   </Button>
                 </div>
               </form>
@@ -297,7 +306,7 @@ class ShareSimButton extends Component {
                 </Button>
                 <Button
                   onClick={this.copyToClipboard}
-                  className={`${styles.copyBtn} ${showCopied ? styles.active : ''}`}
+                  className={`${styles.customBtn} ${showCopied ? styles.active : ''}`}
                   name="copyLinkSubmit"
                   type="button"
                   appearance="outline"

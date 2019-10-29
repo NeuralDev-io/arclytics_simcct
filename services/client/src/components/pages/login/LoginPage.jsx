@@ -26,7 +26,7 @@ import TextField from '../../elements/textfield'
 import Modal from '../../elements/modal'
 import Button from '../../elements/button'
 import { buttonize } from '../../../utils/accessibility'
-import { SUPPORTED_THEMES } from '../../../utils/theming'
+import { addFlashToast } from '../../../state/ducks/toast/actions'
 
 import styles from './LoginPage.module.scss'
 import { logError, logInfo } from '../../../api/LoggingHelper'
@@ -44,16 +44,21 @@ class LoginPage extends Component {
       hasForgotPwd: null,
     }
     this.handleExpiredToken = this.handleExpiredToken.bind(this)
-    // this.handler = this.handler.bind(this)
   }
 
   componentDidMount = () => {
-    const { history } = this.props
+    const { history, location: { state }, addFlashToastConnect } = this.props
     checkAuthStatus().then((res) => {
       if (res.status === 'success') {
         history.push('/')
       }
     })
+    if (state && state.forcedOut) {
+      addFlashToastConnect({
+        message: state.forcedOutMessage,
+        options: { variant: 'error' },
+      }, true)
+    }
   }
 
   handleExpiredToken = () => {
@@ -228,11 +233,22 @@ LoginPage.propTypes = {
       token: PropTypes.string,
     }),
   }).isRequired,
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      forcedOut: PropTypes.bool,
+      forcedOutMessage: PropTypes.string,
+    }),
+  }).isRequired,
   theme: PropTypes.string.isRequired,
+  addFlashToastConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = (state) => ({
   theme: state.self.theme,
 })
 
-export default connect(mapStateToProps, {})(LoginPage)
+const mapDispatchToProps = {
+  addFlashToastConnect: addFlashToast,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(LoginPage)

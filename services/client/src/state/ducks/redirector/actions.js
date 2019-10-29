@@ -49,3 +49,29 @@ export const removeLocation = key => (dispatch) => {
     payload: key,
   })
 }
+
+/**
+ * Add a location to navigate back to sign in page.
+ * This action will be called when an API request receives 401 code response.
+ *
+ * This function initially add a FlashToast to notify the user that session
+ * has expired. However this was moved to LoginPage to avoid the possibility
+ * of multiple 401 API requests calling forceSignIn at the same time leading to
+ * multiple toasts displayed.
+ */
+export const forceSignIn = (message = 'Your session has expired. Please sign in again.') => (dispatch) => {
+  dispatch({
+    type: ADD_LOCATION,
+    payload: {
+      key: new Date().getTime() + Math.random(),
+      location: {
+        pathname: '/signin',
+        state: {
+          forcedOut: true,
+          forcedOutMessage: message,
+        },
+      },
+    },
+  })
+  dispatch({ type: 'USER_LOGOUT' })
+}

@@ -36,17 +36,18 @@ class Redirector extends React.Component {
       locations,
       removeLocationConnect,
       history,
+      location: { pathname },
     } = this.props
     const { navigated } = this.state
 
-    locations.forEach((location) => {
+    locations.forEach((loc) => {
       setTimeout(() => {
         // if already navigated to this location, abort
-        if (navigated.includes(location.key)) return
+        if (loc.location.pathname === pathname || navigated.includes(loc.key)) return
         // Dispatch action to remove the location from the redux store
-        removeLocationConnect(location.key)
+        removeLocationConnect(loc.key)
         // navigate to this new location
-        history.push(location.location)
+        history.push(loc.location)
       }, 1)
     })
 
@@ -57,6 +58,9 @@ class Redirector extends React.Component {
 Redirector.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
+  }).isRequired,
+  location: PropTypes.shape({
+    pathname: PropTypes.string,
   }).isRequired,
   // from connect
   removeLocationConnect: PropTypes.func.isRequired,

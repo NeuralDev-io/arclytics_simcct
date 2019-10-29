@@ -28,6 +28,7 @@ import {
 import { addFlashToast } from '../toast/actions'
 import { SIMCCT_URL } from '../../../constants'
 import { logError } from '../../../api/LoggingHelper'
+import { forceSignIn } from '../redirector/actions'
 
 // Change the ports for which server
 
@@ -59,6 +60,10 @@ const getAlloys = type => (dispatch) => {
     },
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status === 404) { return { status: 'success', data: [] } }
       if (res.status !== 200) {
         return {
@@ -117,6 +122,10 @@ const createAlloy = (type, alloy) => dispatch => (
     body: JSON.stringify(alloy),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 201) {
         return {
           status: 'fail',
@@ -165,6 +174,10 @@ const updateAlloy = (type, alloy) => (dispatch) => {
     }),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 200) {
         return {
           status: 'fail',
@@ -216,6 +229,10 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
     },
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 202) {
         return {
           status: 'fail',

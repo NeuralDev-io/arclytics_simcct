@@ -8,7 +8,7 @@ import {
 import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
 import { logError } from '../../../api/LoggingHelper'
-
+import { forceSignIn } from '../redirector/actions'
 
 /**
  * API request to `simcct` server to get all feedback stored in the `feedback`
@@ -56,6 +56,10 @@ export const getFeedback = params => (dispatch) => {
     },
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status === 404) {
         return {
           status: 'success',
@@ -154,6 +158,10 @@ export const searchFeedback = params => (dispatch) => {
     },
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status === 404) {
         return {
           status: 'success',
@@ -255,6 +263,10 @@ export const submitFeedback = () => (dispatch, getState) => {
     }),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 200) {
         return {
           status: 'fail',
@@ -303,6 +315,10 @@ export const submitRating = rate => (dispatch) => {
     }),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 200) {
         return {
           status: 'fail',

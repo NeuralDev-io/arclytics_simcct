@@ -20,6 +20,7 @@ import { updateFeedback } from '../feedback/actions'
 import { addSimToTimeMachine } from '../timeMachine/actions'
 import { resetEquilibriumValues } from '../equi/actions'
 import { logError, logDebug } from '../../../api/LoggingHelper'
+import { forceSignIn } from '../redirector/actions'
 
 /**
  * Initialise a new sim session on the server, then update alloy in
@@ -67,12 +68,24 @@ export const initSession = (option, type, alloy) => (dispatch, getState) => {
       }),
     })
       .then((res) => {
-        if (res.status !== 200) throw new Error('Couldn\'t update composition')
+        if (res.status === 401) {
+          forceSignIn()(dispatch)
+          throw new Error('Session expired')
+        }
+        if (res.status !== 200) {
+          return {
+            status: 'fail',
+            message: 'Couldn\'t update composition',
+          }
+        }
         return res.json()
       })
       .then((res) => {
         if (res.status === 'fail') {
-          throw new Error(res.message)
+          addFlashToast({
+            message: res.message,
+            options: { variant: 'error' },
+          }, true)(dispatch)
         }
         if (res.status === 'success') {
           dispatch({
@@ -90,10 +103,6 @@ export const initSession = (option, type, alloy) => (dispatch, getState) => {
       .catch((err) => {
         // log to fluentd
         logError(err.toString(), err.message, 'actions.updateAlloy', err.stack)
-        addFlashToast({
-          message: err.message,
-          options: { variant: 'error' },
-        }, true)(dispatch)
         dispatch({ type: INIT_SESSION, status: 'fail' })
       })
   } else {
@@ -170,12 +179,24 @@ export const updateComp = (option, type, alloy, error) => (dispatch, getState) =
       }),
     })
       .then((res) => {
-        if (res.status !== 200) throw new Error('Couldn\'t update composition')
+        if (res.status === 401) {
+          forceSignIn()(dispatch)
+          throw new Error('Session expired')
+        }
+        if (res.status !== 200) {
+          return {
+            status: 'fail',
+            message: 'Couldn\'t update composition',
+          }
+        }
         return res.json()
       })
       .then((res) => {
         if (res.status === 'fail') {
-          throw new Error(res.message)
+          addFlashToast({
+            message: res.message,
+            options: { variant: 'error' },
+          }, true)(dispatch)
         }
         if (res.status === 'success') {
           dispatch({
@@ -193,10 +214,6 @@ export const updateComp = (option, type, alloy, error) => (dispatch, getState) =
       .catch((err) => {
         // log to fluentd
         logError(err.toString(), err.message, 'actions.updateComp', err.stack)
-        addFlashToast({
-          message: err.message,
-          options: { variant: 'error' },
-        }, true)(dispatch)
       })
   }
 }
@@ -257,12 +274,24 @@ export const updateConfigMethod = value => (dispatch, getState) => {
       }),
     })
       .then((res) => {
-        if (res.status !== 200) throw new Error('Couldn\'t update method')
+        if (res.status === 401) {
+          forceSignIn()(dispatch)
+          throw new Error('Session expired')
+        }
+        if (res.status !== 200) {
+          return {
+            status: 'fail',
+            message: 'Couldn\'t update method',
+          }
+        }
         return res.json()
       })
       .then((res) => {
         if (res.status === 'fail') {
-          throw new Error(res.message)
+          addFlashToast({
+            message: res.message,
+            options: { variant: 'error' },
+          }, true)(dispatch)
         }
         if (res.status === 'success') {
           dispatch({
@@ -278,10 +307,6 @@ export const updateConfigMethod = value => (dispatch, getState) => {
       .catch((err) => {
         // log to fluentd
         logError(err.toString(), err.message, 'actions.updateMethod', err.stack)
-        addFlashToast({
-          message: err.message,
-          options: { variant: 'error' },
-        }, true)(dispatch)
       })
   }
 }
@@ -411,6 +436,10 @@ export const getMsBsAe = name => (dispatch, getState) => {
       }),
     })
       .then((res) => {
+        if (res.status === 401) {
+          forceSignIn()(dispatch)
+          throw new Error('Session expired')
+        }
         if (res.status !== 200) {
           return {
             status: 'fail',
@@ -541,6 +570,10 @@ export const runSim = () => (dispatch, getState) => {
     }),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 200) {
         addFlashToast({
           message: 'Could not get simulation results',
@@ -629,6 +662,10 @@ export const loadSimFromLink = token => (dispatch, getState) => (
     },
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 200) {
         return {
           status: 'fail',

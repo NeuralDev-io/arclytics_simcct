@@ -13,6 +13,7 @@ import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
 import { logError } from '../../../api/LoggingHelper'
 import { changeTheme } from '../../../utils/theming'
+import { forceSignIn } from '../redirector/actions'
 
 /**
  * Make API request to retrieve user profile.
@@ -26,6 +27,10 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
     },
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 200) {
         return {
           status: 'fail',
@@ -69,6 +74,10 @@ export const createUserProfile = values => (dispatch) => {
     body: JSON.stringify(values),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 201) {
         return {
           status: 'fail',
@@ -112,6 +121,10 @@ export const updateUserProfile = values => (dispatch) => {
     body: JSON.stringify(values),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 200) {
         return {
           status: 'fail',
@@ -155,6 +168,10 @@ export const updateEmail = values => (dispatch) => {
     body: JSON.stringify(values),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 200) {
         return {
           status: 'fail',
@@ -198,6 +215,10 @@ export const changePassword = values => (dispatch) => {
     body: JSON.stringify(values),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 200) {
         return {
           status: 'fail',
@@ -272,6 +293,10 @@ export const saveSimulation = () => (dispatch, getState) => {
       simulation_results: simResults,
     }),
   }).then((res) => {
+    if (res.status === 401) {
+      forceSignIn()(dispatch)
+      throw new Error('Session expired')
+    }
     if (res.status !== 201) {
       return {
         status: 'fail',
@@ -331,6 +356,10 @@ export const getSavedSimulations = () => (dispatch) => {
       'Content-Type': 'application/json',
     },
   }).then((res) => {
+    if (res.status === 401) {
+      forceSignIn()(dispatch)
+      throw new Error('Session expired')
+    }
     if (res.status === 404) { return { status: 'success', data: [] } }
     if (res.status !== 200) {
       return {
@@ -387,6 +416,10 @@ export const deleteSavedSimulation = id => (dispatch) => (
       'Content-Type': 'application/json',
     },
   }).then((res) => {
+    if (res.status === 401) {
+      forceSignIn()(dispatch)
+      throw new Error('Session expired')
+    }
     if (res.status === 404) {
       return {
         status: 'fail',
@@ -501,6 +534,10 @@ export const getLastSim = () => dispatch => (
     },
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status === 404) { return { status: 'fail', data: {} } }
       if (res.status !== 200) {
         return {

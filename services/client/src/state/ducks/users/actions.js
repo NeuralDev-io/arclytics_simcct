@@ -8,6 +8,7 @@ import {
 import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
 import { logError } from '../../../api/LoggingHelper'
+import { forceSignIn } from '../redirector/actions'
 
 /**
  * Get a list of users.
@@ -28,16 +29,14 @@ export const getUsers = params => (dispatch) => {
     },
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status === 404) {
         return {
           status: 'success',
           data: [],
-        }
-      }
-      if (res.status === 401) {
-        return {
-          status: 'fail',
-          message: 'Not Authorized.',
         }
       }
       if (res.status !== 200) {
@@ -91,18 +90,16 @@ export const searchUsers = params => (dispatch) => {
     },
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status === 404) {
         // Ensure the 404 returned is not an error but just a successful
         // request without any data returned.
         return {
           status: 'success',
           data: [],
-        }
-      }
-      if (res.status === 401) {
-        return {
-          status: 'fail',
-          message: 'Not Authorized.',
         }
       }
       if (res.status !== 200) {
@@ -152,6 +149,10 @@ export const deactivateUser = (email) => (dispatch) => {
     }),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 200) {
         return {
           status: 'fail',
@@ -195,6 +196,10 @@ export const enableUser = (email) => (dispatch) => {
     }),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 200) {
         return {
           status: 'fail',
@@ -236,6 +241,10 @@ export const promoteAdmin = (email, position) => (dispatch) => {
     })),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 202) {
         return {
           status: 'fail',

@@ -1,6 +1,8 @@
+@import '../../../styles/animation';
+
 .main {
   width: 80%;
-  padding-right: 40%;
+  padding-right: 30%;
   margin: auto;
   display: flex;
   flex-flow: column;
@@ -8,14 +10,34 @@
 }
 
 .inputHeader {
-  & > h3 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  h3.heading {
     margin-right: 3rem;
-    display: inline-block;
   }
 
-  & > span.status {
+  span.status {
     font-style: italic;
+    margin-bottom: 1.8rem;
   }
+
+  .headingGroup {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    
+    h3.heading {
+      margin-right: 2rem;
+    }
+
+    Button {
+      margin-bottom: 2.3rem;
+    }
+  }
+
 }
 
 .inputRow {
@@ -31,8 +53,21 @@
   display: flex;
   flex-flow: row wrap;
   align-items: center;
+  margin-top: 1.5rem;
+  margin-bottom: 2.5rem;
 
   & > Button:last-of-type {
     margin-left: 1.5rem;
+  }
+}
+
+.passwordGroup {
+  display: flex;
+  flex-direction: column;
+
+  .inputRow {
+    & > span {
+      width: 15rem;
+    }
   }
 }

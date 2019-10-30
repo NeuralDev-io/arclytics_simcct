@@ -7,6 +7,7 @@ import {
   GET_SIM,
   GET_LAST_SIM,
   DELETE_SIM,
+  UPDATE_PASSWORD,
 } from './types'
 import { SUPPORTED_THEMES } from '../../../utils/theming'
 
@@ -28,8 +29,9 @@ const initialState = {
     last_updated: '',
     last_login: '',
     created: '',
-    // when user editing email
+    // when user editing email or password
     isEmailUpdating: false,
+    isPasswordUpdating: false,
   },
   savedSimulations: {
     fetched: false,
@@ -118,6 +120,27 @@ const reducer = (
           user: {
             ...state.user,
             isEmailUpdating: false,
+          },
+        }
+      }
+      break
+    }
+    case UPDATE_PASSWORD: {
+      if (action.status === 'started') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isPasswordUpdating: true,
+          },
+        }
+      }
+      if (action.status === 'started') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isPasswordUpdating: false,
           },
         }
       }

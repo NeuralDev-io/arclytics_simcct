@@ -8,6 +8,7 @@ import {
   GET_LAST_SIM,
   DELETE_SIM,
   CHANGE_THEME,
+  UPDATE_PASSWORD,
 } from './types'
 import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
@@ -145,6 +146,10 @@ export const updateUserProfile = values => (dispatch) => {
           type: UPDATE_USER_PROFILE,
           payload: data.data,
         })
+        addFlashToast({
+          message: 'Profile updated',
+          options: { variant: 'success' },
+        }, true)(dispatch)
       }
     })
     .catch((err) => {
@@ -180,7 +185,7 @@ export const updateEmail = email => (dispatch) => {
       if (res.status !== 200) {
         return {
           status: 'fail',
-          message: 'Something went wrong. Email was not saved',
+          message: 'Something went wrong. Make sure you use a valid email.',
         }
       }
       return res.json()
@@ -203,7 +208,7 @@ export const updateEmail = email => (dispatch) => {
           status: 'success',
         })
         addFlashToast({
-          message: 'Email updated. Please verify your new email',
+          message: 'Email updated. Please verify your new email.',
           options: { variant: 'success' },
         }, true)(dispatch)
       }
@@ -218,7 +223,12 @@ export const updateEmail = email => (dispatch) => {
  * Update user password
  * @param {any} values object containing password fields
  */
-export const changePassword = values => (dispatch) => {
+export const changePassword = (password, passwordConfirm) => (dispatch) => {
+  dispatch({
+    type: UPDATE_PASSWORD,
+    status: 'started',
+  })
+
   fetch(`${SIMCCT_URL}/auth/password/change`, {
     method: 'PUT',
     mode: 'cors',
@@ -226,7 +236,10 @@ export const changePassword = values => (dispatch) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(values),
+    body: JSON.stringify({
+      new_password: password,
+      confirm_password: passwordConfirm,
+    }),
   })
     .then((res) => {
       if (res.status === 401) {
@@ -241,13 +254,23 @@ export const changePassword = values => (dispatch) => {
       }
       return res.json()
     })
-    .then((data) => {
-      if (data.status === 'fail') {
+    .then((res) => {
+      if (res.status === 'fail') {
         addFlashToast({
-          message: data.message,
+          message: res.message,
           options: { variant: 'error' },
         }, true)(dispatch)
       }
+      if (res.status === 'success') {
+        addFlashToast({
+          message: 'Password updated successfully',
+          options: { variant: 'success' },
+        }, true)
+      }
+      dispatch({
+        type: UPDATE_PASSWORD,
+        status: 'finished',
+      })
     })
     .catch((err) => {
       // log to fluentd

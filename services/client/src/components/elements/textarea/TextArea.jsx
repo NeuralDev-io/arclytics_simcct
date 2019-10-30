@@ -5,8 +5,8 @@
  *
  * Text area component
  *
- * @version 1.0.0
- * @author Andrew Che
+ * @version 1.1.0
+ * @author Andrew Che, Dalton Le
  */
 
 import React, { Component } from 'react'
@@ -18,12 +18,23 @@ class TextArea extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      err: '',
+      highlightMax: false,
     }
   }
 
   handleChange = (e) => {
-    const { onChange } = this.props
+    const { onChange, maxCharacters } = this.props
+    const val = e.target.value
+    if (maxCharacters > -1) {
+      // check length of new value
+      if (val.length > maxCharacters) {
+        this.setState({ highlightMax: true })
+        setTimeout(() => {
+          this.setState({ highlightMax: false })
+        }, 500)
+        return
+      }
+    }
     onChange(e.target.value)
   }
 
@@ -37,13 +48,17 @@ class TextArea extends Component {
       cols,
       rows,
       name,
+      maxCharacters,
       ...other
     } = this.props
-    const { err } = this.state
-    const classname = `${styles.textarea} ${length === 'default' ? '' : styles[length]} ${err !== '' && styles.error} ${className || ''}`
+    const { highlightMax } = this.state
+    const classname = `${styles.textarea}
+      ${length === 'default' ? '' : styles[length]}
+      ${highlightMax ? styles.errored : ''}
+      ${className || ''}`
 
     return (
-      <div>
+      <div className={styles.container}>
         <textarea
           {...other}
           cols={cols}
@@ -55,7 +70,17 @@ class TextArea extends Component {
           onChange={e => this.handleChange(e)}
           disabled={isDisabled}
         />
-        <span className="text--sub2">{err}</span>
+        {
+          maxCharacters > -1
+            ? (
+              <span className={`${styles.error} text--sub2 ${highlightMax ? styles.active : ''}`}>
+                {value.length}
+                /
+                {maxCharacters}
+              </span>
+            )
+            : ''
+        }
       </div>
     )
   }
@@ -74,6 +99,7 @@ TextArea.propTypes = {
   className: PropTypes.string,
   cols: PropTypes.number,
   rows: PropTypes.number,
+  maxCharacters: PropTypes.number,
 }
 
 TextArea.defaultProps = {
@@ -84,6 +110,7 @@ TextArea.defaultProps = {
   value: '',
   cols: 0,
   rows: 10,
+  maxCharacters: -1,
 }
 
 export default TextArea

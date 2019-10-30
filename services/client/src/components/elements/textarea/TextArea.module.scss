@@ -4,13 +4,18 @@
   display: flex;
   flex-flow: column nowrap;
 
-  & > span {
-    color: var(--r500);
+  & > span.error {
     margin-top: .25rem;
+    align-self: flex-end;
+
+    &.active {
+      color: var(--r500);
+      box-shadow: 0 1 1 rgba(var(--r500-rgb), 0.2);
+    }
   }
 }
 
-textarea {
+.textarea {
   // remove default styles
   border: none;
   outline: none;
@@ -53,6 +58,11 @@ textarea {
       color: var(--n300);
     }
   }
+
+  &.errored {
+    border-color: var(--r500);
+    box-shadow: 0 0px 15px rgba(var(--r500-rgb), 0.2);
+  }
 }
 
 .short {
@@ -65,21 +75,4 @@ textarea {
 
 .stretch {
   width: 100%
-}
-
-.error {
-  background-color: rgba(var(--r500-rgb), 0.1);
-  border: 1px solid var(--r500);
-
-  &:hover {
-    background-color: rgba(var(--r500-rgb), 0.2);
-    border-color: 1px solid var(--r500);
-  }
-  &:hover:not([disabled]) {
-    background-color: rgba(var(--r500-rgb), 0.2);
-  }
-  &:focus {
-    background-color: var(--n0);
-    border-color: var(--r500);
-  }
 }

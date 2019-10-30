@@ -130,6 +130,7 @@ class FeedbackModal extends Component {
                     placeholder="Message"
                     length="stretch"
                     rows={8}
+                    maxCharacters={350}
                   />
                   <div className={styles.buttonGroup}>
                     <Button

@@ -12,7 +12,8 @@ import { Formik } from 'formik'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationCircle } from '@fortawesome/pro-light-svg-icons/faExclamationCircle'
-import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
+import { ReactComponent as LogoLight } from '../../../assets/logo_20.svg'
+import { ReactComponent as LogoDark } from '../../../assets/logo_20_dark.svg'
 import {signup, checkAuthStatus, resendVerify} from '../../../api/AuthenticationHelper'
 import { signupValidation } from '../../../utils/ValidationHelper'
 import { buttonize } from '../../../utils/accessibility'
@@ -30,6 +31,7 @@ class SignupPage extends Component {
     super(props)
     this.state = {
       showCnfrmModal: false,
+      renderConfirmModal: false,
     }
   }
 
@@ -40,6 +42,9 @@ class SignupPage extends Component {
         history.push('/')
       }
     })
+    setTimeout(() => {
+      this.setState({ renderConfirmModal: true })
+    }, 2000)
   }
 
   handleResend = (email) => {
@@ -66,13 +71,17 @@ class SignupPage extends Component {
   }
 
   render() {
-    const { showCnfrmModal } = this.state
-    const { history } = this.props
+    const { showCnfrmModal, renderConfirmModal } = this.state
+    const { history, theme } = this.props
     return (
       <div className={styles.outer}>
         <div className={styles.form}>
           <div className={styles.logoContainer}>
-            <Logo className={styles.logo} />
+            {
+              theme === 'light'
+                ? <LogoLight className={styles.logo} />
+                : <LogoDark className={styles.logo} />
+            }
             <h3>ARCLYTICS</h3>
           </div>
           <div className={styles.header}>
@@ -208,41 +217,45 @@ class SignupPage extends Component {
                     </div>
                   </div>
                 </form>
-                <Modal
-                  className={styles.cnfrmModal}
-                  show={showCnfrmModal}
-                >
-
-                  <FontAwesomeIcon icon={faExclamationCircle} className={styles.alertCircleIcon} />
-                  <h5> Your account has been successfully registered. Verify your account. </h5>
-                  <sub>
-                    So that you are able to use the full services of the Arclytics Sim application
-                    and to be able to personalise your account.
-                  </sub>
-                  <span>
-                    We have sent an email to &nbsp;
-                    <span className={styles.email}>
-                      {values.email}
-                    </span>
-                  </span>
-                  <h6>Already verified?</h6>
-                  <div className={styles.buttons}>
-                    <Button
-                      appearance="default"
-                      className={styles.goToSignIn}
-                      onClick={() => history.push('/signin')}
+                {
+                  renderConfirmModal && (
+                    <Modal
+                      className={styles.cnfrmModal}
+                      show={showCnfrmModal}
                     >
-                      Take me to sign in
-                    </Button>
-                  </div>
-                  <span>
-                    Didn&apos;t receive an email? Click&nbsp;
-                    <span className={styles.resendEmail} {...buttonize( () => this.handleResend(values.email))}>
-                      here&nbsp;
-                    </span>
-                    to resend.
-                  </span>
-                </Modal>
+
+                      <FontAwesomeIcon icon={faExclamationCircle} className={styles.alertCircleIcon} />
+                      <h5> Your account has been successfully registered. Verify your account. </h5>
+                      <sub>
+                        So that you are able to use the full services of the Arclytics Sim application
+                        and to be able to personalise your account.
+                      </sub>
+                      <span>
+                        We have sent an email to &nbsp;
+                        <span className={styles.email}>
+                          {values.email}
+                        </span>
+                      </span>
+                      <h6>Already verified?</h6>
+                      <div className={styles.buttons}>
+                        <Button
+                          appearance="default"
+                          className={styles.goToSignIn}
+                          onClick={() => history.push('/signin')}
+                        >
+                          Take me to sign in
+                        </Button>
+                      </div>
+                      <span>
+                        Didn&apos;t receive an email? Click&nbsp;
+                        <span className={styles.resendEmail} {...buttonize( () => this.handleResend(values.email))}>
+                          here&nbsp;
+                        </span>
+                        to resend.
+                      </span>
+                    </Modal>
+                  )
+                }
               </div>
             )}
           </Formik>
@@ -262,10 +275,15 @@ SignupPage.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
+  theme: PropTypes.string.isRequired,
 }
+
+const mapStateToProps = state => ({
+  theme: state.self.theme,
+})
 
 const mapDispatchToProps = {
   addFlashToastConnect: addFlashToast,
 }
 
-export default connect(null, mapDispatchToProps) (SignupPage)
+export default connect(mapStateToProps, mapDispatchToProps)(SignupPage)

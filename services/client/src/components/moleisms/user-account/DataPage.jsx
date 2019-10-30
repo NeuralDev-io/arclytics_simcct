@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import Button from '../../elements/button'
 
 import styles from './DataPage.module.scss'
 

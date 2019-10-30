@@ -6,6 +6,7 @@ import Button from '../../elements/button'
 import SecureConfirmModal from '../confirm-modal/SecureConfirmModal'
 import { getUserProfile, updateEmail, changePassword } from '../../../state/ducks/self/actions'
 import { validate, validateGroup } from '../../../utils/validator'
+import { dangerouslyGetDateTimeString } from '../../../utils/datetime'
 import { constraints } from './utils/constraints'
 
 import styles from './SecurityPage.module.scss'
@@ -149,6 +150,7 @@ class SecurityPage extends Component {
         email,
         isEmailUpdating,
         isPasswordUpdating,
+        last_login,
       },
     } = this.props
     const {
@@ -167,6 +169,10 @@ class SecurityPage extends Component {
 
     return (
       <div className={styles.main}>
+        <span className="text--sub2">
+          Last login:&nbsp;
+          {dangerouslyGetDateTimeString(last_login)}
+        </span>
         <header className={styles.inputHeader}>
           <h3 className={styles.heading}>Email</h3>
           {
@@ -319,6 +325,7 @@ SecurityPage.propTypes = {
     isFetched: PropTypes.bool,
     isEmailUpdating: PropTypes.bool,
     isPasswordUpdating: PropTypes.bool,
+    last_login: PropTypes.string,
   }).isRequired,
   getUserProfileConnect: PropTypes.func.isRequired,
   updateEmailConnect: PropTypes.string.isRequired,

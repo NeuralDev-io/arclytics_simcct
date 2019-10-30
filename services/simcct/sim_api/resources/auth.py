@@ -968,7 +968,7 @@ def get_user_status(user) -> Tuple[dict, int]:
     return jsonify(response), 200
 
 
-@auth_blueprint.route(Routes.delete_user, methods=['DELETE'])
+@auth_blueprint.route(Routes.delete_user.value, methods=['DELETE'])
 @authenticate_user_and_cookie_flask
 def delete_user(user) -> Tuple[dict, int]:
     """This method deletes a User's document and all documents that are

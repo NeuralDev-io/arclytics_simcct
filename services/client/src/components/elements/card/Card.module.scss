@@ -4,7 +4,17 @@
   background-color: var(--n0);
   padding: 1.5rem 0.75rem 0 0.75rem;
   margin: 0.25rem;
+  border-radius: 6px;
 
   display: flex;
   flex-direction: column;
 }
+
+// experimental theming properties
+//
+// html[data-theme="dark"] {
+//   .card {
+//     background-color: var(--n10);
+//     box-shadow: none;
+//   }
+// }

@@ -10,6 +10,7 @@ import {
   CHANGE_THEME,
   UPDATE_PASSWORD,
   DELETE_ACCOUNT,
+  DOWNLOAD_ACCOUNT_DATA,
 } from './types'
 import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
@@ -614,6 +615,56 @@ export const changeThemeRedux = theme => (dispatch) => {
   changeTheme(theme)
 }
 
+
+export const downloadAccountData = () => (dispatch) => {
+  dispatch({
+    type: DOWNLOAD_ACCOUNT_DATA,
+    status: 'started',
+  })
+
+  return fetch(`${SIMCCT_URL}/user/data`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong. Please try again',
+        }
+      }
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        })(dispatch)
+      }
+      dispatch({
+        type: DOWNLOAD_ACCOUNT_DATA,
+        status: 'finished',
+      })
+      return res
+    })
+    .catch((err) => {
+      // log to fluentd
+      logError(err.toString(), err.message, 'self.actions.downloadAccountData', err.stack)
+    })
+}
+
+/**
+ * Delete user account. After account is deleted, redirect back
+ * to /signin
+ */
 export const deleteAccount = () => (dispatch) => {
   dispatch({
     type: DELETE_ACCOUNT,

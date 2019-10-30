@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Button from '../../elements/button'
 import { SecureConfirmModal } from '../confirm-modal'
-import { deleteAccount } from '../../../state/ducks/self/actions'
+import { deleteAccount, downloadAccountData } from '../../../state/ducks/self/actions'
 
 import styles from './DataPage.module.scss'
 
@@ -12,14 +12,18 @@ class DataPage extends Component {
     super(props)
     this.state = {
       showConfirmModal: false,
+      showDownloadConfirmModal: false,
     }
-  }
-
-  componentDidMount = () => {
   }
 
   toggleConfirmModal = () => {
     this.setState(({ showConfirmModal }) => ({ showConfirmModal: !showConfirmModal }))
+  }
+
+  toggleDownloadConfirmModal = () => {
+    this.setState(({ showDownloadConfirmModal }) => ({
+      showDownloadConfirmModal: !showDownloadConfirmModal,
+    }))
   }
 
   handleDeleteAccount = () => {
@@ -28,9 +32,17 @@ class DataPage extends Component {
     this.toggleConfirmModal()
   }
 
+  handleDownloadData = () => {
+    const { downloadAccountDataConnect } = this.props
+    downloadAccountDataConnect()
+      .then((res) => {
+        console.log(res)
+      })
+  }
+
   render() {
-    const { isDeleting } = this.props
-    const { showConfirmModal } = this.state
+    const { isDeleting, isLoadingAccountData } = this.props
+    const { showConfirmModal, showDownloadConfirmModal } = this.state
     return (
       <div className={styles.main}>
         <h3>Download your Arclytics SimCCT data</h3>
@@ -38,10 +50,15 @@ class DataPage extends Component {
         <Button
           appearance="outline"
           length="long"
-          onClick={() => {}}
+          onClick={this.toggleDownloadConfirmModal}
+          isDisabled={isLoadingAccountData}
           className={`${styles.btn}`}
         >
-          Request data
+          {
+            isLoadingAccountData
+              ? 'Collecting account data...'
+              : 'Request data'
+          }
         </Button>
         <h3>Delete your account</h3>
         <div className={styles.deleteGroup}>
@@ -75,6 +92,13 @@ class DataPage extends Component {
           onClose={this.toggleConfirmModal}
           isDangerous
         />
+        <SecureConfirmModal
+          show={showDownloadConfirmModal}
+          messageTitle="Please confirm your identiy to request account data"
+          actionButtonName="Request data"
+          onSubmit={this.handleDownloadData}
+          onClose={this.toggleDownloadConfirmModal}
+        />
       </div>
     )
   }
@@ -82,15 +106,19 @@ class DataPage extends Component {
 
 DataPage.propTypes = {
   isDeleting: PropTypes.bool.isRequired,
+  isLoadingAccountData: PropTypes.bool.isRequired,
   deleteAccountConnect: PropTypes.func.isRequired,
+  downloadAccountDataConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = (state) => ({
   isDeleting: state.self.user.isDeleting,
+  isLoadingAccountData: state.self.user.isLoadingAccountData,
 })
 
 const mapDispatchToProps = {
   deleteAccountConnect: deleteAccount,
+  downloadAccountDataConnect: downloadAccountData,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(DataPage)

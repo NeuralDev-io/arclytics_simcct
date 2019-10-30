@@ -12,4 +12,5 @@ export const GET_LAST_SIM = 'self/GET_LAST_SIM'
 
 export const CHANGE_THEME = 'self/CHANGE_THEME'
 
+export const DOWNLOAD_ACCOUNT_DATA = 'self/DOWNLOAD_ACCOUNT_DATA'
 export const DELETE_ACCOUNT = 'self/DELETE_ACCOUNT'

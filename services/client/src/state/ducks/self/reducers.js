@@ -9,6 +9,7 @@ import {
   DELETE_SIM,
   UPDATE_PASSWORD,
   DELETE_ACCOUNT,
+  DOWNLOAD_ACCOUNT_DATA,
 } from './types'
 import { SUPPORTED_THEMES } from '../../../utils/theming'
 
@@ -35,6 +36,7 @@ const initialState = {
     isPasswordUpdating: false,
     // when user deleting their account
     isDeleting: false,
+    isLoadingAccountData: false,
   },
   savedSimulations: {
     fetched: false,
@@ -231,6 +233,21 @@ const reducer = (
             ...state.user,
             isDeleting: false,
           },
+        }
+      }
+      break
+    }
+    case DOWNLOAD_ACCOUNT_DATA: {
+      if (action.status === 'started') {
+        return {
+          ...state,
+          isLoadingAccountData: true,
+        }
+      }
+      if (action.status === 'finished') {
+        return {
+          ...state,
+          isLoadingAccountData: false,
         }
       }
       break

@@ -42,7 +42,7 @@ const AboutApp = () => (
     <div className={styles.version}>
       <p>
         <strong>Arclytics SimCCT version</strong>
-        &nbsp; 1.3.0
+        &nbsp; 2.0.0
       </p>
     </div>
 

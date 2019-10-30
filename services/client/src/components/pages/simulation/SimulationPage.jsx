@@ -56,6 +56,7 @@ class SimulationPage extends Component {
       getLastSimConnect,
       loadLastSimConnect,
       location,
+      isAuthenticated,
     } = this.props
     window.addEventListener('beforeunload', persistSimConnect)
 
@@ -63,6 +64,8 @@ class SimulationPage extends Component {
     if (location.state !== undefined && (
       location.state.loadFromAccount || location.state.loadFromShare
     )) return
+
+    if (!isAuthenticated) return
 
     const persistedTime = Date.parse(persistedSimTime)
     const now = new Date()

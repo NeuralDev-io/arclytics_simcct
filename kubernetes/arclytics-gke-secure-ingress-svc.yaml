@@ -44,7 +44,7 @@ spec:
     spec:
       containers:
         - name: arclytics-container
-          image: asia.gcr.io/arc-sim-testing/arclytics_service:2.0.0
+          image: gcr.io/arclytics/arclytics_service:2.0.0
           imagePullPolicy: Always
           ports:
           - containerPort: 8001

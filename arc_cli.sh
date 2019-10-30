@@ -1118,7 +1118,7 @@ while [[ "$1" != "" ]] ; do
       ;;
     deploy )
       # Some Defaults
-      PROJECT_ID="arc-sim-testing"
+      PROJECT_ID="arclytics"
       CLUSTER_NAME="arc-sim-cluster"
       KUBERNETES_MASTER_VERSION="1.13.7-gke.8"
       KUBERNETES_NODE_VERSION=${KUBERNETES_MASTER_VERSION}
@@ -1177,10 +1177,10 @@ while [[ "$1" != "" ]] ; do
                   gcloud container clusters create ${CLUSTER_NAME} \
                       ${LOCATION_COMMAND} \
                       --image-type=${IMAGE_TYPE} \
-                      --machine-type=n1-standard-2 \
+                      --machine-type=n1-standard-4 \
                       --num-nodes=4 \
                       --min-nodes=4 \
-                      --max-nodes=8 \
+                      --max-nodes=16 \
                       --enable-autoscaling \
                       --enable-autorepair \
                       --node-labels=component=arc-nodes \
@@ -1297,7 +1297,7 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=mongodb'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build mongodb
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=mongodb")
-                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_mongo:${TAG}
+                  docker push gcr.io/${PROJECT_ID}/arc_sim_mongo:${TAG}
                   ;;
                 create )
                   # shellcheck disable=SC1090
@@ -1390,7 +1390,7 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=redis'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build redis
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=redis")
-                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
+                  docker push gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
                   ;;
                 create )
                   gcloud compute disks create --size 25GB \
@@ -1466,7 +1466,7 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=fluentd'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build fluentd
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=fluentd")
-                  docker push asia.gcr.io/${PROJECT_ID}/arc_fluentd:latest
+                  docker push gcr.io/${PROJECT_ID}/arc_fluentd:latest
                   ;;
                 create )
                   kubectl apply -f "${WORKDIR}/kubernetes/efk-fluentd-gke-rbac.yaml"
@@ -1528,7 +1528,7 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=simcct'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
-                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  docker push gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
                   ;;
                 create )
                   # eval $(minikube docker-env)  <-- If using Docker and self-built images
@@ -1538,10 +1538,10 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=simcct'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
-                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  docker push gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
                   kubectl delete deployment simcct
                   sleep 10
-                  # kubectl set image deployment/simcct simcct-container=asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  # kubectl set image deployment/simcct simcct-container=gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
                   kubectl apply -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
@@ -1563,7 +1563,7 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=celery-worker'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
-                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                  docker push gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
                   ;;
                 create )
                   kubectl apply -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
@@ -1572,10 +1572,10 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=celery-worker'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
-                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                  docker push gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
                   kubectl delete deployment celery-worker
                   sleep 10
-                  # kubectl set image deployment/celery-worker celery-worker-container=asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                  # kubectl set image deployment/celery-worker celery-worker-container=gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
                   kubectl apply -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
                   ;;
                 delete )
@@ -1597,7 +1597,7 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=arclytics'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build arclytics
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=arclytics")
-                  docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  docker push gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
                   ;;
                 create )
                   kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
@@ -1606,10 +1606,10 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=arclytics'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build arclytics
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=arclytics")
-                  docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  docker push gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
                   kubectl delete deployment arclytics
                   sleep 10
-                  # kubectl set image deployment/arclytics arclytics-container=asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  # kubectl set image deployment/arclytics arclytics-container=gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
                   kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
@@ -1631,7 +1631,7 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=client'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
-                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                  docker push gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
                   ;;
                 create )
                   # eval $(minikube docker-env)
@@ -1641,10 +1641,10 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=client'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
-                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                  docker push gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
                   kubectl delete deployment client-https
                   sleep 10
-                  # kubectl set image deployment/client-https client-https-container=asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                  # kubectl set image deployment/client-https client-https-container=gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
                   kubectl apply -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
@@ -1666,7 +1666,7 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=website'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build website
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=website")
-                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_website:latest
+                  docker push gcr.io/${PROJECT_ID}/arc_sim_website:latest
                   ;;
                 create )
                   kubectl apply -f "${WORKDIR}/kubernetes/web-gke-secure-svc.yaml"
@@ -1675,7 +1675,7 @@ while [[ "$1" != "" ]] ; do
                   docker system prune -af --volumes --filter 'label=service=website'
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build website
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=website")
-                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_website:latest
+                  docker push gcr.io/${PROJECT_ID}/arc_sim_website:latest
                   kubectl delete deployment web
                   sleep 10
                   kubectl apply -f "${WORKDIR}/kubernetes/web-gke-secure-svc.yaml"
@@ -1717,22 +1717,22 @@ while [[ "$1" != "" ]] ; do
             docker system prune -af --volumes --filter 'label=service=arclytics'
             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build mongodb
             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=mongodb")
-            docker push asia.gcr.io/${PROJECT_ID}/arc_sim_mongo:${TAG}
+            docker push gcr.io/${PROJECT_ID}/arc_sim_mongo:${TAG}
             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build redis
             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=redis")
-            docker push asia.gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
+            docker push gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
-            docker push asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+            docker push gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
-            docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+            docker push gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build arclytics
             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=arclytics")
-            docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+            docker push gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
-            docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+            docker push gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
             ;;
           ls | show | get )
             echoSpace

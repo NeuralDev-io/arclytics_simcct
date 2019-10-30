@@ -50,13 +50,17 @@ class MongoService(object):
             db_name: str = 'arc_dev',
             collection: str = '',
             query: dict = None,
+            projections: dict = None
     ):
         """Read from the database given a collection and return a cursor."""
         if query is None:
             return None
+        _projections = {}
+        if projections:
+            _projections = projections
         db = self.conn[db_name]
 
-        return db[collection].find(query)
+        return db[collection].find(query, _projections)
 
     def read_mongo(
             self,

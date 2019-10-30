@@ -9,10 +9,10 @@
  */
 import React, { Component } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUsersCog } from '@fortawesome/pro-light-svg-icons/faUsersCog'
 import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
 import { faPlayCircle } from '@fortawesome/pro-light-svg-icons/faPlayCircle'
 import { faStar } from '@fortawesome/pro-light-svg-icons/faStar'
-import { faCode } from '@fortawesome/pro-light-svg-icons/faCode'
 import { logError } from '../../../api/LoggingHelper'
 import Card from '../../elements/card'
 import LiveLoginTimeSeries from '../charts/LiveLoginTimeSeries'
@@ -57,31 +57,31 @@ class AppAnalytics extends Component {
         <div className={styles.generalData}>
 
           <Card className={styles.generalDataCard}>
-            <FontAwesomeIcon icon={faPlayCircle} color={COLORS[0]}  className={styles.cardIcon} />
+            <FontAwesomeIcon icon={faUsersCog} color={COLORS[0]} className={styles.cardIcon} />
+            <h5>{(statsData !== undefined) ? statsData.count.admins : '0'}</h5>
+            <p>Admins</p>
+          </Card>
+
+          <Card className={styles.generalDataCard}>
+            <FontAwesomeIcon icon={faPlayCircle} color={COLORS[1]} className={styles.cardIcon} />
             <h5>{(statsData !== undefined) ? statsData.count.simulations : '0'}</h5>
             <p>Run simulation</p>
           </Card>
 
           <Card className={styles.generalDataCard}>
-            <FontAwesomeIcon icon={faDatabase} color={COLORS[1]} className={styles.cardIcon} />
+            <FontAwesomeIcon icon={faDatabase} color={COLORS[2]} className={styles.cardIcon} />
             <h5>{(statsData !== undefined) ? statsData.count.global_alloys : '0'}</h5>
             <p>Global alloys</p>
           </Card>
 
           <Card className={styles.generalDataCard}>
-            <FontAwesomeIcon icon={faStar} color={COLORS[2]} className={styles.cardIcon} />
+            <FontAwesomeIcon icon={faStar} color={COLORS[3]} className={styles.cardIcon} />
             <h5>
               {
                 (statsData !== undefined) ? roundTo(parseFloat(statsData.average.ratings), 2) : '0'
               }
             </h5>
             <p>Average ratings</p>
-          </Card>
-
-          <Card className={styles.generalDataCard}>
-            <FontAwesomeIcon icon={faCode} color={COLORS[3]} className={styles.cardIcon} />
-            <h5>0</h5>
-            <p>More stuff</p>
           </Card>
 
         </div>

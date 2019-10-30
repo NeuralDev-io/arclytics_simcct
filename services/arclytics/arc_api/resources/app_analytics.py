@@ -53,6 +53,14 @@ class GeneralData(Resource):
             A valid HTTP Response with a dictionary of data and a status code.
         """
 
+        # Number of admins
+        admin_count = MongoService().find(
+            db_name=DATABASE,
+            collection='users',
+            query={'admin': {'$eq': True}},
+            projections={'_id': 1}
+        ).count()
+
         # Get total global alloys
         alloys_count = MongoService().find(
             db_name=DATABASE,
@@ -92,7 +100,7 @@ class GeneralData(Resource):
                 'count': {
                     'simulations': sim_df['count'][0],
                     'global_alloys': alloys_count,
-                    # 'ratings': ratings_df['count'][0],
+                    'admins': admin_count,
                 },
                 'average': {
                     'ratings': ratings_df['average'][0]

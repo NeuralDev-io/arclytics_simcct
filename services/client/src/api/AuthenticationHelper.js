@@ -13,7 +13,7 @@
 import { SIMCCT_URL } from '../constants'
 import { logError } from './LoggingHelper'
 
-export const login = async (values, resolve, reject) => {
+export const login = async (values, resolve, reject, addFlashToastConnect) => {
   fetch(`${SIMCCT_URL}/auth/login`, {
     method: 'POST',
     mode: 'cors',
@@ -26,14 +26,24 @@ export const login = async (values, resolve, reject) => {
     .then((res) => {
       if (res.status === 200) {
         resolve(res.json())
-      } else if (res.status === 404 || res.status === 403) {
-      // return an error message as string
+      } else {
+        // return an error message as string
         res.json().then(object => reject(object.message))
+        addFlashToastConnect({
+          message: 'Invalid email or password',
+          options: { variant: 'error' },
+        }, true)
       }
     })
-    .catch((err) => logError(
-      err.toString(), err.message, 'AuthenticationHelper.login', err.stack,
-    ))
+    .catch((err) => {
+      logError(
+        err.toString(), err.message, 'AuthenticationHelper.login', err.stack,
+      )
+      addFlashToastConnect({
+        message: 'Invalid email or password',
+        options: { variant: 'error' },
+      }, true)
+    })
 }
 
 export const signup = async (values, resolve, reject) => {

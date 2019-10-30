@@ -92,7 +92,7 @@ class LoginPage extends Component {
     const {
       hasForgotPwd,
     } = this.state
-    const { theme, location: { state } } = this.props
+    const { theme, location: { state }, addFlashToastConnect } = this.props
 
     let fadeForgot = ('')
     let fadeLogin = ('')
@@ -122,7 +122,7 @@ class LoginPage extends Component {
             onSubmit={(values, { setSubmitting, setErrors }) => {
               setSubmitting(true)
               const promise = new Promise((resolve, reject) => {
-                login(values, resolve, reject)
+                login(values, resolve, reject, addFlashToastConnect)
               })
               promise.then(() => {
                 // If response is successful
@@ -140,8 +140,8 @@ class LoginPage extends Component {
                 .catch((rejectMsg) => {
                   // If response is unsuccessful
                   setErrors({
-                    email: 'Invalid email',
-                    password: 'Password is invalid',
+                    email: 'Invalid email or password',
+                    password: 'Invalid email or password',
                   })
                   setSubmitting(false)
                   logInfo(rejectMsg, 'LoginPage.Formik')
@@ -151,7 +151,6 @@ class LoginPage extends Component {
             {({
               values,
               errors,
-              touched,
               handleSubmit,
               setFieldValue,
               isSubmitting,
@@ -167,7 +166,7 @@ class LoginPage extends Component {
                         value={values.email}
                         placeholder="Email"
                         length="stretch"
-                        error={errors.email && touched.email && errors.email}
+                        error={errors.email}
                       />
                     </div>
                     <div className={styles.password}>
@@ -178,7 +177,7 @@ class LoginPage extends Component {
                         value={values.password}
                         placeholder="Password"
                         length="stretch"
-                        error={errors.password && touched.password && errors.password}
+                        error={errors.password}
                       />
                     </div>
                     <div className={styles.otherLinks}>

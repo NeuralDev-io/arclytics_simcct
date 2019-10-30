@@ -204,7 +204,7 @@ class ConfigForm extends Component {
               <Tooltip className={{ container: styles.infoTipContainer }}>
                 <BrainIcon className={styles.infoIcon} />
                 <p>
-                  J.S.Krikaldy, et al., &quot;Prediction of microstructure and hardenability in
+                  J.S.Kirkaldy, et al., &quot;Prediction of microstructure and hardenability in
                   <br />
                   low-alloy steels&quot;, in Phase Transformations in ferrous alloys 1983,
                   <br />
@@ -238,17 +238,17 @@ class ConfigForm extends Component {
               <Tooltip className={{ container: styles.infoTipContainer }}>
                 <BrainIcon className={styles.infoIcon} />
                 <p>
-                  Plots a sigmoidal function distribution on a separate sheet.
-                  <br />
-                  This is for visualizing the various Sigmoidal distributions used:
-                  <br />
-                  <br />
-                  S(X) - Li98(Ferrite, Pearlite, Bianite)
-                  <br />
-                  I(X) - Krikaldy (Ferrite Pearlite)
-                  <br />
-                  I&apos;(X) - Kirkaldy (Bainite)
-                  <br />
+                  In Arclytics SimCCT grain size is set manually. It is possible
+                  to obtain a useful value using a macrograph of weld section
+                  and measuring this directly which is in practice the most
+                  common method of determining this value.
+                  <br /><br />
+                  A good first estimate in the absence of any measurements is
+                  an ASTM[23] value of ~7.5 which equates to a diameter of ~22
+                  µm. There are a number of analytical methods for calculating
+                  grain growth[24, 25] based on thermal history however they
+                  are not implemented in the current version of Arclytics
+                  SimCCT.
                 </p>
               </Tooltip>
             </div>
@@ -291,8 +291,36 @@ class ConfigForm extends Component {
                 <Tooltip className={{ container: styles.infoTipContainer }}>
                   <BrainIcon className={styles.infoIcon} />
                   <p>
-                    Ae3 = temperature below austenite to ferrite transformation becomes
-                    thermodynamically possible.
+                    A
+                    <sub>e1</sub>
+                    : Pearlite asymptote temperature
+                    <br />
+                    <br />
+                    A
+                    <sub>e1</sub>
+                    is estimated based on the alloy composition using the
+                    equations presented by Andrews [15], Eldis (in Barralis
+                    [16]), and Grange [17]. An average of the three methods is
+                    used in the automatic calculation for use in Arclytics
+                    SimCCT. Ideally the Ae1 value should be calculated using a
+                    thermodynamics based method, however, this has not yet
+                    been implemented in the current stage of the code
+                    development.
+                    <br />
+                    <br />
+                    A
+                    <sub>e3</sub>
+                    : Ferrite asymptote temperature
+                    <br />
+                    <br />
+                    Initially the estimation of Ae<sub>3</sub> was made using
+                    similar empirical equations to those used for
+                    A
+                    <sub>e1</sub>
+                    , however, this has been replaced by the
+                    intercept intercept from thermodynamics equilibrium
+                    calculations by Bhadeshia [18]. This is shown in the
+                    section for XFE determination and in Figure 1.
                   </p>
                 </Tooltip>
               </div>
@@ -356,7 +384,23 @@ class ConfigForm extends Component {
                 <Tooltip className={{ container: styles.infoTipContainer }}>
                   <BrainIcon className={styles.infoIcon} />
                   <p>
-                    Bainite transformation temperature (C)
+                    B
+                    <sub>S</sub>
+                    : Bainite asymptote temperature
+                    <br />
+                    <br />
+                    The method of determining B
+                    <sub>S</sub>
+                    used in the current program
+                    was presented by Kirkaldy [1, 2]. This method utilises a
+                    linear regression formula for bainite, using published
+                    data, and provides an alloy composition dependant value
+                    for B
+                    <sub>S</sub>
+                    . Li [4] further modified the Kirkaldy
+                    equation. Both methods are used in the current program and
+                    a preferred methodology can be selected by the when
+                    selecting one for the entire simulation.
                   </p>
                 </Tooltip>
               </div>
@@ -398,10 +442,21 @@ class ConfigForm extends Component {
                 <Tooltip className={{ container: styles.infoTipContainer }}>
                   <BrainIcon className={styles.infoIcon} />
                   <p>
-                    Martensite transformation temperature (C)
-                    <br />
-                    <br />
-                    Martensite under cool temperature (C)
+                    M
+                    <sub>S</sub>
+                    : Martensite start temperature, M
+                    <sub>S</sub>
+                    , and transformation. The M
+                    <sub>S</sub>
+                    transformation temperature is alloy composition dependent
+                    and calculated by either the method of Steven and Haynes
+                    [19], as adopted by Kirkaldy [1], or by the method
+                    presented by Kung and Raymond [20] preferred by Li [4].
+                    Martensite transformation is considered to be athermal and
+                    is predicted by the equation developed by Koistinen and
+                    Marburger [21] were the rate parameter, αm, is estimated
+                    from the alloy composition using the equation fit developed
+                    by Van Bohemen and Sistema [22].
                   </p>
                 </Tooltip>
               </div>

@@ -61,7 +61,8 @@ class UserProfileConfig extends Component {
             <Tooltip className={{ container: styles.infoTipContainer }}>
               <BrainIcon className={styles.infoIcon} />
               <p>
-                Test
+                The starting temperature for the simulation of solid-state phase
+                transformation (SSPT) for the TTT, CCT, and User Cooling curve.
               </p>
             </Tooltip>
           </div>
@@ -82,7 +83,7 @@ class UserProfileConfig extends Component {
             <Tooltip className={{ container: styles.infoTipContainer }}>
               <BrainIcon className={styles.infoIcon} />
               <p>
-                Test
+                The rate of cooling for the CCT and User Cooling Curve to begin with in the routine.
               </p>
             </Tooltip>
           </div>

@@ -17,9 +17,9 @@ class SecureConfirmModal extends Component {
     }
   }
 
-  handleSubmit = (e, alloyId) => {
+  handleSubmit = (e) => {
     e.preventDefault()
-    const { onConfirm, addFlashToastConnect, onSubmit } = this.props
+    const { addFlashToastConnect, onSubmit } = this.props
     const { password } = this.state
     checkPassword(password)
       .then((isValid) => {
@@ -53,7 +53,7 @@ class SecureConfirmModal extends Component {
       <Modal show={show} className={`${styles.modal} ${styles.className}`} withCloseIcon onClose={this.handleClose}>
         <form className={styles.content} onSubmit={this.handleSubmit}>
           <div className={styles.header}>
-            <h6> {messageTitle} </h6>
+            <h6>{messageTitle}</h6>
             <span>Please enter password to confirm.</span>
           </div>
           <TextField
@@ -95,8 +95,14 @@ SecureConfirmModal.propTypes = {
   show: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
-  successMessage: PropTypes.string,
+  messageTitle: PropTypes.string,
+  actionButtonName: PropTypes.string,
   addFlashToastConnect: PropTypes.func.isRequired,
+}
+
+SecureConfirmModal.defaultProps = {
+  actionButtonName: 'Confirm',
+  messageTitle: 'Please confirm',
 }
 
 const mapDispatchToProps = {

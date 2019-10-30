@@ -12,6 +12,7 @@ import { SUPPORTED_THEMES } from '../../../utils/theming'
 
 const initialState = {
   user: {
+    isFetched: false,
     admin: false,
     profile: {
       aim: '',
@@ -19,6 +20,16 @@ const initialState = {
       sci_tech_exp: '',
       phase_transform_exp: '',
     },
+    email: '',
+    first_name: '',
+    last_name: '',
+    active: false,
+    verified: false,
+    last_updated: '',
+    last_login: '',
+    created: '',
+    // when user editing email
+    isEmailUpdating: false,
   },
   savedSimulations: {
     fetched: false,
@@ -59,6 +70,7 @@ const reducer = (
         user: {
           ...state.user,
           ...action.payload,
+          isFetched: true,
         },
       }
     case CREATE_USER_PROFILE:
@@ -80,14 +92,37 @@ const reducer = (
           ...action.payload,
         },
       }
-    case UPDATE_EMAIL:
-      return {
-        ...state,
-        user: {
-          ...state.user,
-          ...action.payload,
-        },
+    case UPDATE_EMAIL: {
+      if (action.status === 'started') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isEmailUpdating: true,
+          },
+        }
       }
+      if (action.status === 'success') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            email: action.payload,
+            isEmailUpdating: false,
+          },
+        }
+      }
+      if (action.status === 'fail') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isEmailUpdating: false,
+          },
+        }
+      }
+      break
+    }
     case SAVE_SIM:
       return {
         ...state,

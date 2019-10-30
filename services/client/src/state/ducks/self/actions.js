@@ -155,17 +155,22 @@ export const updateUserProfile = values => (dispatch) => {
 
 /**
  * Update user email
- * @param {any} values object that contains email field
+ * @param {string} email new email
  */
-export const updateEmail = values => (dispatch) => {
-  fetch(`${SIMCCT_URL}/auth/email/change`, {
+export const updateEmail = email => (dispatch) => {
+  dispatch({
+    type: UPDATE_EMAIL,
+    status: 'started',
+  })
+
+  return fetch(`${SIMCCT_URL}/auth/email/change`, {
     method: 'PUT',
     mode: 'cors',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(values),
+    body: JSON.stringify({ new_email: email }),
   })
     .then((res) => {
       if (res.status === 401) {
@@ -186,12 +191,21 @@ export const updateEmail = values => (dispatch) => {
           message: data.message,
           options: { variant: 'error' },
         }, true)(dispatch)
+        dispatch({
+          type: UPDATE_EMAIL,
+          status: 'fail',
+        })
       }
       if (data.status === 'success') {
         dispatch({
           type: UPDATE_EMAIL,
-          payload: data.data,
+          payload: email,
+          status: 'success',
         })
+        addFlashToast({
+          message: 'Email updated. Please verify your new email',
+          options: { variant: 'success' },
+        }, true)(dispatch)
       }
     })
     .catch((err) => {

@@ -135,7 +135,7 @@ const reducer = (
           },
         }
       }
-      if (action.status === 'started') {
+      if (action.status === 'finished') {
         return {
           ...state,
           user: {

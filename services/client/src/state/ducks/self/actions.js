@@ -265,7 +265,7 @@ export const changePassword = (password, passwordConfirm) => (dispatch) => {
         addFlashToast({
           message: 'Password updated successfully',
           options: { variant: 'success' },
-        }, true)
+        }, true)(dispatch)
       }
       dispatch({
         type: UPDATE_PASSWORD,

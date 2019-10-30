@@ -157,7 +157,7 @@ class AppBar extends React.Component {
             id="admin"
             className={`${styles.navIcon} ${active === 'admin' && styles.active}`}
             style={{ display: isAdmin ? 'flex' : 'none' }}
-            to="/admin/analytics"
+            to="/admin/alloys"
           >
             <Tooltip space={12}>
               <FontAwesomeIcon icon={faUserCog} className={styles.icon} size="lg" />

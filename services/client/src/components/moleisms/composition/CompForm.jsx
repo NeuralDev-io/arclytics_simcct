@@ -118,7 +118,8 @@ class CompForm extends Component {
               <Tooltip className={{ container: styles.infoTipContainer }} position="horizontal">
                 <BrainIcon className={styles.infoIcon} />
                 <p>
-                  Test
+                  Low-alloy steel must have Carbon content less than 0.2% and contain a total
+                  less than 12% alloying elements (Ni, Cr, Mo, V, B, W or Cu)
                 </p>
               </Tooltip>
             </div>

@@ -12,7 +12,7 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Link } from 'react-router-dom'
+import { Link, withRouter } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faServer } from '@fortawesome/pro-light-svg-icons/faServer'
 import { faUserFriends } from '@fortawesome/pro-light-svg-icons/faUserFriends'
@@ -31,9 +31,19 @@ class AnalyticsSidebar extends Component {
   componentDidMount = () => {
     const { active } = this.state
     const { redirect } = this.props
-    if (!['application', 'users', 'simulations'].includes(active)) {
-      this.setState({ active: 'application' })
-      redirect('/analytics/app')
+    if (!['app', 'users', 'simulations'].includes(active)) {
+      this.setState({ active: 'users' })
+      redirect('/analytics/users')
+    }
+  }
+
+  componentDidUpdate = (prevProps) => {
+    const { location } = this.props
+    if (prevProps.location !== location) {
+      const pathArr = location.pathname.split('/')
+      this.setState({
+        active: pathArr[pathArr.length - 1],
+      })
     }
   }
 
@@ -46,30 +56,27 @@ class AnalyticsSidebar extends Component {
         <Link
           id="users"
           to="/analytics/users"
-          onClick={() => this.setState({ active: 'users' })}
           className={`${styles.item} ${active === 'users' && styles.active}`}
         >
-          <FontAwesomeIcon icon={faUserFriends} className={styles.icon} size="lg"/>
+          <FontAwesomeIcon icon={faUserFriends} className={styles.icon} size="lg" />
           <span>Users</span>
         </Link>
 
-         <Link
+        <Link
           id="simulations"
           to="/analytics/simulations"
-          onClick={() => this.setState({ active: 'simulations' })}
           className={`${styles.item} ${active === 'simulations' && styles.active}`}
-         >
-          <FontAwesomeIcon icon={faAtomAlt} className={styles.icon} size="lg"/>
+        >
+          <FontAwesomeIcon icon={faAtomAlt} className={styles.icon} size="lg" />
           <span>Simulations</span>
-         </Link>
+        </Link>
 
         <Link
           id="application"
           to="/analytics/app"
-          onClick={() => this.setState({ active: 'application' })}
-          className={`${styles.item} ${active === 'application' && styles.active}`}
+          className={`${styles.item} ${active === 'app' && styles.active}`}
         >
-          <FontAwesomeIcon icon={faServer} className={styles.icon} size="lg"/>
+          <FontAwesomeIcon icon={faServer} className={styles.icon} size="lg" />
           <span>Application</span>
         </Link>
 
@@ -80,6 +87,9 @@ class AnalyticsSidebar extends Component {
 
 AnalyticsSidebar.propTypes = {
   redirect: PropTypes.func.isRequired,
+  location: PropTypes.shape({
+    pathname: PropTypes.string,
+  }).isRequired,
 }
 
-export default AnalyticsSidebar
+export default withRouter(AnalyticsSidebar)

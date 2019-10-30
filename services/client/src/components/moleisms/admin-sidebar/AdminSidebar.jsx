@@ -10,7 +10,7 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Link } from 'react-router-dom'
+import { Link, withRouter } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
 import { faUserFriends } from '@fortawesome/pro-light-svg-icons/faUserFriends'
@@ -35,6 +35,16 @@ class AdminSidebar extends Component {
     }
   }
 
+  componentDidUpdate = (prevProps) => {
+    const { location } = this.props
+    if (prevProps.location !== location) {
+      const pathArr = location.pathname.split('/')
+      this.setState({
+        active: pathArr[pathArr.length - 1],
+      })
+    }
+  }
+
   render() {
     const { active } = this.state
     return (
@@ -43,19 +53,17 @@ class AdminSidebar extends Component {
         <Link
           id="alloys"
           to="/admin/alloys"
-          onClick={() => this.setState({ active: 'alloys' })}
           className={`${styles.item} ${active === 'alloys' && styles.active}`}
         >
-          <FontAwesomeIcon icon={faDatabase} className={styles.icon}/>
+          <FontAwesomeIcon icon={faDatabase} className={styles.icon} />
           <span>Alloy database</span>
         </Link>
         <Link
           id="users"
           to="/admin/users"
-          onClick={() => this.setState({ active: 'users' })}
           className={`${styles.item} ${active === 'users' && styles.active}`}
         >
-          <FontAwesomeIcon icon={faUserFriends} className={styles.icon}/>
+          <FontAwesomeIcon icon={faUserFriends} className={styles.icon} />
           <span>Manage users</span>
         </Link>
       </div>
@@ -65,6 +73,9 @@ class AdminSidebar extends Component {
 
 AdminSidebar.propTypes = {
   redirect: PropTypes.func.isRequired,
+  location: PropTypes.shape({
+    pathname: PropTypes.string,
+  }).isRequired,
 }
 
-export default AdminSidebar
+export default withRouter(AdminSidebar)

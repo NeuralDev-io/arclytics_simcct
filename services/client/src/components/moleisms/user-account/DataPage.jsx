@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import FileSaver from 'file-saver'
 import Button from '../../elements/button'
 import { SecureConfirmModal } from '../confirm-modal'
 import { deleteAccount, downloadAccountData } from '../../../state/ducks/self/actions'
@@ -34,9 +35,13 @@ class DataPage extends Component {
 
   handleDownloadData = () => {
     const { downloadAccountDataConnect } = this.props
+    this.toggleDownloadConfirmModal()
     downloadAccountDataConnect()
       .then((res) => {
-        console.log(res)
+        if (res.status === 'success') {
+          const blob = new Blob([JSON.stringify(res.data)], { type: 'text/plain;charset=utf-8' })
+          FileSaver.saveAs(blob, `arc_account_data_${new Date().toISOString()}.json`)
+        }
       })
   }
 
@@ -47,19 +52,21 @@ class DataPage extends Component {
       <div className={styles.main}>
         <h3>Download your Arclytics SimCCT data</h3>
         <p className={styles.downloadP}>Download this data to your device.</p>
-        <Button
-          appearance="outline"
-          length="long"
-          onClick={this.toggleDownloadConfirmModal}
-          isDisabled={isLoadingAccountData}
-          className={`${styles.btn}`}
-        >
-          {
-            isLoadingAccountData
-              ? 'Collecting account data...'
-              : 'Request data'
-          }
-        </Button>
+        {
+          isLoadingAccountData
+            ? <p className={styles.collecting}>Collecting your data...</p>
+            : (
+              <Button
+                appearance="outline"
+                length="long"
+                onClick={this.toggleDownloadConfirmModal}
+                isDisabled={isLoadingAccountData}
+                className={styles.btn}
+              >
+                Request data
+              </Button>
+            )
+        }
         <h3>Delete your account</h3>
         <div className={styles.deleteGroup}>
           <p>

@@ -615,7 +615,9 @@ export const changeThemeRedux = theme => (dispatch) => {
   changeTheme(theme)
 }
 
-
+/**
+ * Download account data
+ */
 export const downloadAccountData = () => (dispatch) => {
   dispatch({
     type: DOWNLOAD_ACCOUNT_DATA,

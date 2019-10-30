@@ -241,13 +241,19 @@ const reducer = (
       if (action.status === 'started') {
         return {
           ...state,
-          isLoadingAccountData: true,
+          user: {
+            ...state.user,
+            isLoadingAccountData: true,
+          },
         }
       }
       if (action.status === 'finished') {
         return {
           ...state,
-          isLoadingAccountData: false,
+          user: {
+            ...state.user,
+            isLoadingAccountData: false,
+          },
         }
       }
       break

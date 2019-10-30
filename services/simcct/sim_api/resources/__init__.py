@@ -11,3 +11,4 @@ from .simulation import sim_blueprint
 from .user_alloys import user_alloys_blueprint
 from .users import users_blueprint
 from .root import root_blueprint
+from .data_personalisation import data_personal_blueprint

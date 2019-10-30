@@ -57,6 +57,10 @@ class Routes(enum.Enum):
     login = f'{PREFIX}/auth/login'
     logout = f'{PREFIX}/auth/logout'
     get_user_status = f'{PREFIX}/auth/status'
+    delete_user = f'{PREFIX}/auth/user'
+
+    # data_personalisation.py
+    DownloadData = f'{PREFIX}/user/data'
 
     # admin_auth.py
     AdminCreate = f'{PREFIX}/admin/create'

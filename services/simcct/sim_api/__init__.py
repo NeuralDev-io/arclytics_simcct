@@ -179,7 +179,7 @@ def create_app(configs_path=app_settings) -> Flask:
             admin_blueprint, share_blueprint, last_sim_blueprint,
             save_sim_blueprint, ratings_blueprint, configs_blueprint,
             alloys_blueprint, sim_blueprint, sim_alloys_blueprint,
-            root_blueprint
+            root_blueprint, data_personal_blueprint
         )
         # ========== # FLASK BLUEPRINTS # ========== #
         app.register_blueprint(root_blueprint)
@@ -195,6 +195,7 @@ def create_app(configs_path=app_settings) -> Flask:
         app.register_blueprint(alloys_blueprint)
         app.register_blueprint(sim_blueprint)
         app.register_blueprint(sim_alloys_blueprint)
+        app.register_blueprint(data_personal_blueprint)
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
     # Notes:

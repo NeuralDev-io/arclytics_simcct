@@ -198,6 +198,10 @@ const updateAlloy = (type, alloy) => (dispatch) => {
           type: type === 'global' ? UPDATE_GLOBAL_ALLOY : UPDATE_USER_ALLOY,
           payload: res.data,
         })
+        addFlashToast({
+          message: `Alloy ${alloy.name} updated`,
+          options: { variant: 'success' },
+        }, true)(dispatch)
       }
     })
     .catch((err) => {
@@ -253,6 +257,10 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
           type: type === 'global' ? DELETE_GLOBAL_ALLOY : DELETE_USER_ALLOY,
           payload: alloyId,
         })
+        addFlashToast({
+          message: 'Alloy deleted',
+          options: { variant: 'success' },
+        }, true)(dispatch)
       }
     })
     .catch((err) => {

@@ -11,7 +11,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, withRouter } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser } from '@fortawesome/pro-light-svg-icons/faUser'
 import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
@@ -44,6 +44,16 @@ class UserSidebar extends Component {
     })
   }
 
+  componentDidUpdate = (prevProps) => {
+    const { location } = this.props
+    if (prevProps.location !== location) {
+      const pathArr = location.pathname.split('/')
+      this.setState({
+        active: pathArr[pathArr.length - 1],
+      })
+    }
+  }
+
   render() {
     const { active } = this.state
     return (
@@ -52,7 +62,6 @@ class UserSidebar extends Component {
         <Link
           id="profile"
           to="/user/profile"
-          onClick={() => this.setState({ active: 'profile' })}
           className={`${styles.item} ${active === 'profile' && styles.active}`}
         >
           <FontAwesomeIcon icon={faUser} className={styles.icon} />
@@ -61,7 +70,6 @@ class UserSidebar extends Component {
         <Link
           id="security"
           to="/user/security"
-          onClick={() => this.setState({ active: 'security' })}
           className={`${styles.item} ${active === 'security' && styles.active}`}
         >
           <FontAwesomeIcon icon={faDatabase} className={styles.icon} />
@@ -70,7 +78,6 @@ class UserSidebar extends Component {
         <Link
           id="data-personalisation"
           to="/user/data-personalisation"
-          onClick={() => this.setState({ active: 'data-personalisation' })}
           className={`${styles.item} ${active === 'data-personalisation' && styles.active}`}
         >
           <FontAwesomeIcon icon={faSlidersV} className={styles.icon} />
@@ -92,10 +99,13 @@ class UserSidebar extends Component {
 
 UserSidebar.propTypes = {
   updateFeedbackConnect: PropTypes.func.isRequired,
+  location: PropTypes.shape({
+    pathname: PropTypes.string,
+  }).isRequired,
 }
 
 const mapDispatchToProps = {
   updateFeedbackConnect: updateFeedback,
 }
 
-export default connect(null, mapDispatchToProps)(UserSidebar)
+export default withRouter(connect(null, mapDispatchToProps)(UserSidebar))

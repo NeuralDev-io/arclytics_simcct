@@ -112,6 +112,18 @@ const AboutApp = () => (
         referenced. This is not considered to be an exhaustive list of the
         potential methods that could be used for this type of work.
       </p>
+      <h6>SSPT</h6>
+      <p>
+        The two semi-empirical methods for predicting SSPT utilised in the
+        current software were first presented by Kirkaldy and Venugopalan [1, 2]
+        and further developed by Li [3, 4]. These methods were in turn based on
+        underpinning work such as the development of the Zener [10] and Hillert [11]
+        type formula for isothermal SSPT. From this the Scheil-Avrami additivity
+        rule [12] was used to provide a method for computing SSPT under
+        continuous cooling conditions. A further useful description of the SSPT
+        process and the formation of each phase, utilising the
+        Kirkaldy methodology, is provided by Watt [13].
+      </p>
 
       <h6>Prediction of Set Point Temperatures</h6>
       <p>
@@ -157,6 +169,17 @@ const AboutApp = () => (
           implementation).
         </li>
       </ul>
+      <p>
+        <br />
+        The methods used in the current program for determining these parameters
+        are outlined in the following sections. An excellent summary of most of
+        these and other related parameters/methods is provided by Gorni [14].
+        <u>
+          It is reiterated that most of the values automatically determined
+          for the Arclytics SimCCT can be replaced by the user if the
+          steel-specific data is available.
+        </u>
+      </p>
     </section>
   </div>
 )

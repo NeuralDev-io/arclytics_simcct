@@ -1,4 +1,5 @@
 $bg-img: url('../../../assets/login_register_bg.png');
+$bg-img-dark: url('../../../assets/login_register_bg_dark.png');
 
 .outer{
   height:100vh;
@@ -10,6 +11,13 @@ $bg-img: url('../../../assets/login_register_bg.png');
   background-position: 40vw;
   position: relative;
   overflow-y: scroll;
+}
+
+html[data-theme="dark"] {
+  .outer {
+    background: var(--n0) $bg-img-dark no-repeat;
+    background-position: 40vw;
+  }
 }
 
 .logoContainer{

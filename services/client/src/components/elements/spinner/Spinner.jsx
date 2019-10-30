@@ -13,13 +13,20 @@
  * @author Dalton Le
  */
 import React from 'react'
+import PropTypes from 'prop-types'
 
 import styles from './Spinner.module.scss'
 
-export const InlineSpinner = () => (
-  <div className={`${styles.inline} animate-inf-rotate-cc`} />
+const InlineSpinner = ({ size }) => (
+  <div className={`${styles.inline} animate-inf-rotate-cc ${size === 'lg' ? styles.lg : ''}`} />
 )
 
-export const PageSpinner = () => (
-  <div>a</div>
-)
+InlineSpinner.propTypes = {
+  size: PropTypes.string,
+}
+
+InlineSpinner.defaultProps = {
+  size: 'default',
+}
+
+export default InlineSpinner

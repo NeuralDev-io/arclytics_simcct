@@ -142,7 +142,7 @@ class PhaseFractions extends Component {
         </div>
         <div className={styles.pie}>
           {
-            !hasData ? <div className={styles.noData}>{isLoading ? <InlineSpinner /> : 'No data.'}</div>
+            !hasData ? <div className={styles.noData}>{isLoading ? <InlineSpinner size="lg" /> : 'No data.'}</div>
               : (
                 <AutoSizer>
                   {({ height, width }) => (

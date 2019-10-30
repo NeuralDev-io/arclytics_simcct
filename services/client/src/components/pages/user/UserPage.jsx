@@ -17,7 +17,7 @@ import { getUserProfile } from '../../../state/ducks/self/actions'
 
 import AppBar from '../../moleisms/appbar'
 import UserSidebar from '../../moleisms/user-sidebar'
-import ProfilePage from '../../moleisms/user-profile'
+import { ProfilePage, SecurityPage, DataPage } from '../../moleisms/user-account'
 
 import styles from './UserPage.module.scss'
 
@@ -45,6 +45,8 @@ class UserPage extends Component {
         <div className={styles.main}>
           {/* Define the routes for the right panel. */}
           <Route path="/user/profile" render={props => <ProfilePage {...props} userProf={user} />} />
+          <Route path="/user/security" render={props => <SecurityPage {...props} />} />
+          <Route path="/user/data-personalisation" render={props => <DataPage {...props} />} />
         </div>
       </>
     )
@@ -54,6 +56,7 @@ class UserPage extends Component {
 UserPage.propTypes = {
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
   isAdmin: PropTypes.bool.isRequired,
+  user: PropTypes.shape({}).isRequired,
 }
 
 const mapStateToProps = state => ({

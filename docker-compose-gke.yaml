@@ -15,7 +15,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "website"
-    image: asia.gcr.io/arc-sim-testing/arc_sim_website:latest
+    image: gcr.io/arclytics/arc_sim_website:latest
     ports:
       - 8080:8080
     expose:
@@ -31,7 +31,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "fluentd"
-    image: asia.gcr.io/arc-sim-testing/arc_fluentd:latest
+    image: gcr.io/arclytics/arc_fluentd:latest
     restart: always
     ports:
       - 24224:24224
@@ -59,7 +59,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "client"
-    image: asia.gcr.io/arc-sim-testing/arc_sim_client:1.3.0
+    image: gcr.io/arclytics/arc_sim_client:2.0.0
     ports:
       - 8080:8080
     expose:
@@ -86,7 +86,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "simcct"
-    image: asia.gcr.io/arc-sim-testing/arc_sim_service:1.3.0
+    image: gcr.io/arclytics/arc_sim_service:2.0.0
     ports:
       - 8000:8000
     expose:
@@ -125,7 +125,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "celery-worker"
-    image: asia.gcr.io/arc-sim-testing/arc_sim_celery:1.3.0
+    image: gcr.io/arclytics/arc_sim_celery:2.0.0
     ports:
       - 5555:5555
     expose:
@@ -162,7 +162,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "arclytics"
-    image: asia.gcr.io/arc-sim-testing/arclytics_service:2.0.0
+    image: gcr.io/arclytics/arclytics_service:2.0.0
     ports:
       - 8001:8001
     expose:
@@ -199,7 +199,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "redis"
-    image: asia.gcr.io/arc-sim-testing/arc_sim_redis:latest
+    image: gcr.io/arclytics/arc_sim_redis:latest
     restart: always
     ports:
       - 6379:6379
@@ -221,7 +221,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "mongodb"
-    image: asia.gcr.io/arc-sim-testing/arc_sim_mongo:latest
+    image: gcr.io/arclytics/arc_sim_mongo:latest
     restart: always
     ports:
       - 27017:27017

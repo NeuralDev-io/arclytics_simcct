@@ -216,7 +216,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: redis-container
-          image: asia.gcr.io/arc-sim-testing/arc_sim_redis:latest
+          image: gcr.io/arclytics/arc_sim_redis:latest
           imagePullPolicy: Always
           command: ['/usr/local/bin/redis-server']
           args:

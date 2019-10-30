@@ -8,6 +8,8 @@ import {
   GET_LAST_SIM,
   DELETE_SIM,
   UPDATE_PASSWORD,
+  DELETE_ACCOUNT,
+  DOWNLOAD_ACCOUNT_DATA,
 } from './types'
 import { SUPPORTED_THEMES } from '../../../utils/theming'
 
@@ -32,6 +34,9 @@ const initialState = {
     // when user editing email or password
     isEmailUpdating: false,
     isPasswordUpdating: false,
+    // when user deleting their account
+    isDeleting: false,
+    isLoadingAccountData: false,
   },
   savedSimulations: {
     fetched: false,
@@ -135,7 +140,7 @@ const reducer = (
           },
         }
       }
-      if (action.status === 'started') {
+      if (action.status === 'finished') {
         return {
           ...state,
           user: {
@@ -211,6 +216,48 @@ const reducer = (
         ...state,
         theme: action.payload,
       }
+    case DELETE_ACCOUNT: {
+      if (action.status === 'started') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isDeleting: true,
+          },
+        }
+      }
+      if (action.status === 'fail') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isDeleting: false,
+          },
+        }
+      }
+      break
+    }
+    case DOWNLOAD_ACCOUNT_DATA: {
+      if (action.status === 'started') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isLoadingAccountData: true,
+          },
+        }
+      }
+      if (action.status === 'finished') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isLoadingAccountData: false,
+          },
+        }
+      }
+      break
+    }
     default:
       return state
   }

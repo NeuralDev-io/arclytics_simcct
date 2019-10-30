@@ -45,7 +45,9 @@ class SecureConfirmModal extends Component {
     const {
       show,
       messageTitle,
+      messageBody,
       actionButtonName,
+      isDangerous,
     } = this.props
     const { password } = this.state
 
@@ -53,8 +55,8 @@ class SecureConfirmModal extends Component {
       <Modal show={show} className={`${styles.modal} ${styles.className}`} withCloseIcon onClose={this.handleClose}>
         <form className={styles.content} onSubmit={this.handleSubmit}>
           <div className={styles.header}>
-            <h6>{messageTitle}</h6>
-            <span>Please enter password to confirm.</span>
+            <h6 className={isDangerous ? styles.dangerous : ''}>{messageTitle}</h6>
+            <p>{messageBody}</p>
           </div>
           <TextField
             onChange={val => this.setState({ password: val })}
@@ -78,8 +80,9 @@ class SecureConfirmModal extends Component {
               type="submit"
               name="confirmDelete"
               appearance="text"
-              length="long"
-              color="dangerous"
+              // length="long"
+              className={styles.confirmBtn}
+              color={isDangerous ? 'dangerous' : 'default'}
               isDisabled={password === ''}
             >
               {actionButtonName}
@@ -96,13 +99,17 @@ SecureConfirmModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   messageTitle: PropTypes.string,
+  messageBody: PropTypes.string,
   actionButtonName: PropTypes.string,
   addFlashToastConnect: PropTypes.func.isRequired,
+  isDangerous: PropTypes.bool,
 }
 
 SecureConfirmModal.defaultProps = {
   actionButtonName: 'Confirm',
   messageTitle: 'Please confirm',
+  messageBody: 'Please enter password to confirm.',
+  isDangerous: false,
 }
 
 const mapDispatchToProps = {

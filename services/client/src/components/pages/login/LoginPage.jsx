@@ -53,6 +53,12 @@ class LoginPage extends Component {
         history.push('/')
       }
     })
+    if (state && state.accountDeleted) {
+      addFlashToastConnect({
+        message: 'Account deleted. We hope to see you again',
+      }, true)
+      return
+    }
     if (state && state.forcedOut) {
       addFlashToastConnect({
         message: state.forcedOutMessage,
@@ -240,6 +246,7 @@ LoginPage.propTypes = {
     state: PropTypes.shape({
       forcedOut: PropTypes.bool,
       forcedOutMessage: PropTypes.string,
+      accountDeleted: PropTypes.bool,
     }),
   }).isRequired,
   theme: PropTypes.string.isRequired,

@@ -596,13 +596,8 @@ def change_password(user) -> Tuple[dict, int]:
 
     # validate the old password first because we want to ensure we have the
     # right user.
-    old_password = request_data.get('password', None)
     new_password = request_data.get('new_password', None)
     confirm_password = request_data.get('confirm_password', None)
-
-    if not old_password:
-        response['message'] = 'Must provide the current password.'
-        return jsonify(response), 401
 
     if not new_password or not confirm_password:
         response['message'] = 'Must provide a password and confirm password.'
@@ -621,37 +616,31 @@ def change_password(user) -> Tuple[dict, int]:
         response['message'] = 'User needs to verify account.'
         return jsonify(response), 401
 
-    if bcrypt.check_password_hash(user.password, old_password):
-        user.set_password(new_password)
-        user.save()
+    user.set_password(new_password)
+    user.save()
 
-        # The email to notify users.
-        from sim_api.email_service import send_email
-        send_email(
-            to=[user.email],
-            subject_suffix='Your Arclytics Sim password has been changed',
-            html_template=render_template(
-                'change_password.html',
-                change_datetime=datetime.utcnow().isoformat(),
-                email=user.email,
-                user_name=f'{user.first_name} {user.last_name}'
-            ),
-            text_template=render_template(
-                'change_password.txt',
-                change_datetime=datetime.utcnow().isoformat(),
-                email=user.email,
-                user_name=f'{user.first_name} {user.last_name}'
-            )
+    # The email to notify users.
+    from sim_api.email_service import send_email
+    send_email(
+        to=[user.email],
+        subject_suffix='Your Arclytics Sim password has been changed',
+        html_template=render_template(
+            'change_password.html',
+            change_datetime=datetime.utcnow().isoformat(),
+            email=user.email,
+            user_name=f'{user.first_name} {user.last_name}'
+        ),
+        text_template=render_template(
+            'change_password.txt',
+            change_datetime=datetime.utcnow().isoformat(),
+            email=user.email,
+            user_name=f'{user.first_name} {user.last_name}'
         )
+    )
 
-        response['status'] = 'success'
-        response['message'] = 'Successfully changed password.'
-        return jsonify(response), 200
-
-    response['message'] = 'Password is not correct.'
-    logger.info({'email': user.email, 'message': response['message']})
-    apm.capture_message(response['message'])
-    return jsonify(response), 401
+    response['status'] = 'success'
+    response['message'] = 'Successfully changed password.'
+    return jsonify(response), 200
 
 
 @auth_blueprint.route(Routes.change_email.value, methods=['PUT'])

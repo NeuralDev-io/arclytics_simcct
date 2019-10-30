@@ -19,12 +19,16 @@ __date__ = '2019.07.17'
 This module defines and implements the Resource for downloading all user data.
 """
 
+from bson import ObjectId
 from flask import Blueprint
 from flask_restful import Resource
 
 from arc_logging import AppLogger
 from sim_api.extensions import api, apm
 from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.models import SavedSimulation, SharedSimulation, Feedback
+from sim_api.search_service import SearchService
+from sim_api.mongo_service import MongoService
 from sim_api.routes import Routes
 
 logger = AppLogger(__name__)
@@ -49,10 +53,41 @@ class DownloadData(Resource):
         Returns:
             A valid HTTP Response with the results and a status code.
         """
-        response = {'status': 'fail'}
-
         # Save the user's ObjectId
-        oid = user.id
+        oid = ObjectId(user.id)
+
+        user_data = SearchService().find(
+            query={'_id': oid},
+            projections={'password': 0}
+        )
+
+        saved_simulations = MongoService().find(
+            query={'user': oid},
+            projections={'_id': 0, 'user': 0},
+            collection='saved_simulations'
+        )
+
+        shared_simulations = MongoService().find(
+            query={'owner_email': user.email},
+            projections={'_id': 0},
+            collection='shared_simulations'
+        )
+
+        feedback = MongoService().find(
+            query={'user': oid},
+            projections={'_id': 0, 'user': 0},
+            collection='feedback'
+        )
+
+        response = {
+            'status': 'success',
+            'data': {
+                'user': user_data,
+                'saved_simulations': saved_simulations,
+                'shared_simulations': shared_simulations,
+                'feedback': feedback,
+            }
+        }
 
         return response, 200
 

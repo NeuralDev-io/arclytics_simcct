@@ -14,9 +14,11 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import { Link } from 'react-router-dom'
-import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
+import { ReactComponent as LogoLight } from '../../../assets/logo_20.svg'
+import { ReactComponent as LogoDark } from '../../../assets/logo_20_dark.svg'
 import { login, checkAuthStatus } from '../../../api/AuthenticationHelper'
 import { loginValidation } from '../../../utils/ValidationHelper'
 import ForgotPassword from '../../moleisms/forgot-password'
@@ -24,6 +26,7 @@ import TextField from '../../elements/textfield'
 import Modal from '../../elements/modal'
 import Button from '../../elements/button'
 import { buttonize } from '../../../utils/accessibility'
+import { addFlashToast } from '../../../state/ducks/toast/actions'
 
 import styles from './LoginPage.module.scss'
 import { logError, logInfo } from '../../../api/LoggingHelper'
@@ -41,16 +44,21 @@ class LoginPage extends Component {
       hasForgotPwd: null,
     }
     this.handleExpiredToken = this.handleExpiredToken.bind(this)
-    // this.handler = this.handler.bind(this)
   }
 
   componentDidMount = () => {
-    const { history } = this.props
+    const { history, location: { state }, addFlashToastConnect } = this.props
     checkAuthStatus().then((res) => {
       if (res.status === 'success') {
         history.push('/')
       }
     })
+    if (state && state.forcedOut) {
+      addFlashToastConnect({
+        message: state.forcedOutMessage,
+        options: { variant: 'error' },
+      }, true)
+    }
   }
 
   handleExpiredToken = () => {
@@ -84,6 +92,7 @@ class LoginPage extends Component {
     const {
       hasForgotPwd,
     } = this.state
+    const { theme, location: { state } } = this.props
 
     let fadeForgot = ('')
     let fadeLogin = ('')
@@ -95,7 +104,11 @@ class LoginPage extends Component {
     return (
       <div className={styles.outer}>
         <div className={styles.logoContainer}>
-          <Logo className={styles.logo} />
+          {
+            theme === 'light'
+              ? <LogoLight className={styles.logo} />
+              : <LogoDark className={styles.logo} />
+          }
           <h3>ARCLYTICS</h3>
         </div>
         {this.handleExpiredToken()}
@@ -119,6 +132,7 @@ class LoginPage extends Component {
                   setSubmitting(true)
                   if (res.status === 'success') {
                     if (!res.isProfile) history.push('/profileQuestions')
+                    else if (state && state.forcedOut) history.goBack()
                     else history.push('/')
                   }
                 })
@@ -174,12 +188,12 @@ class LoginPage extends Component {
                         <Link className={styles.createAccount} to="/signup">Sign up</Link>
                         {' '}
                       </h6>
-                      <h6
+                      <a
                         className={styles.help}
                         {...buttonize(() => this.setState({ hasForgotPwd: true }))}
                       >
                         Trouble signing in?
-                      </h6>
+                      </a>
                     </div>
                     <div className={styles.clear}>
                       <Button
@@ -214,12 +228,31 @@ class LoginPage extends Component {
 }
 
 LoginPage.propTypes = {
-  history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+    goBack: PropTypes.func.isRequired,
+  }).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       token: PropTypes.string,
     }),
   }).isRequired,
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      forcedOut: PropTypes.bool,
+      forcedOutMessage: PropTypes.string,
+    }),
+  }).isRequired,
+  theme: PropTypes.string.isRequired,
+  addFlashToastConnect: PropTypes.func.isRequired,
 }
 
-export default LoginPage
+const mapStateToProps = (state) => ({
+  theme: state.self.theme,
+})
+
+const mapDispatchToProps = {
+  addFlashToastConnect: addFlashToast,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(LoginPage)

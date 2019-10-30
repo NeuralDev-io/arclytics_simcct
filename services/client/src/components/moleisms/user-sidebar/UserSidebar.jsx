@@ -59,19 +59,19 @@ class UserSidebar extends Component {
           <span>Profile</span>
         </Link>
         <Link
-          id="alloy"
-          to="/user/profile"
-          onClick={() => this.setState({ active: 'profile' })}
-          className={`${styles.item} ${active === 'alloys' && styles.active}`}
+          id="security"
+          to="/user/security"
+          onClick={() => this.setState({ active: 'security' })}
+          className={`${styles.item} ${active === 'security' && styles.active}`}
         >
           <FontAwesomeIcon icon={faDatabase} className={styles.icon} />
           <span>Security</span>
         </Link>
         <Link
-          id="simulations"
-          to="/user/profile"
-          onClick={() => this.setState({ active: 'profile' })}
-          className={`${styles.item} ${active === 'simulations' && styles.active}`}
+          id="data-personalisation"
+          to="/user/data-personalisation"
+          onClick={() => this.setState({ active: 'data-personalisation' })}
+          className={`${styles.item} ${active === 'data-personalisation' && styles.active}`}
         >
           <FontAwesomeIcon icon={faSlidersV} className={styles.icon} />
           <span>Data personalisation</span>

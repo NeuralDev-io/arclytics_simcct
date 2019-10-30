@@ -11,8 +11,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { Link } from 'react-router-dom'
-import MuiTooltip from '@material-ui/core/Tooltip'
+import { Link, withRouter } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOut } from '@fortawesome/pro-light-svg-icons/faSignOut'
 import { faUser } from '@fortawesome/pro-light-svg-icons/faUser'
@@ -25,15 +24,16 @@ import { faFileChartLine } from '@fortawesome/pro-light-svg-icons/faFileChartLin
 import { faCommentAltLines } from '@fortawesome/pro-light-svg-icons/faCommentAltLines'
 import { ReactComponent as SimulationIcon } from '../../../assets/simulation_icon.svg'
 import { ReactComponent as ANSTOLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
-import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
+import { ReactComponent as LogoLight } from '../../../assets/logo_20.svg'
+import { ReactComponent as LogoDark } from '../../../assets/logo_20_dark.svg'
 import store from '../../../state/store'
 import Tooltip from '../../elements/tooltip'
 import { buttonize } from '../../../utils/accessibility'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
 import { saveLastSim } from '../../../state/ducks/self/actions'
 import { logout } from '../../../api/AuthenticationHelper'
-
 import { logError } from '../../../api/LoggingHelper'
+
 import styles from './AppBar.module.scss'
 
 class AppBar extends React.Component {
@@ -59,6 +59,8 @@ class AppBar extends React.Component {
       active,
       isAdmin,
       isAuthenticated,
+      theme,
+      location: { pathname },
     } = this.props
 
     return (
@@ -78,7 +80,7 @@ class AppBar extends React.Component {
           <Link
             id="equilibrium"
             className={`${styles.navIcon} ${active === 'equilibrium' && styles.active} ${!isAuthenticated && styles.disabled}`}
-            to={isAuthenticated ? '/user/simulations' : ''}
+            to={isAuthenticated ? '/equilibrium' : ''}
           >
             <Tooltip space={12}>
               <FontAwesomeIcon icon={faSlidersV} className={styles.icon} size="lg" />
@@ -191,7 +193,10 @@ class AppBar extends React.Component {
           <Link
             id="about"
             className={`${styles.navIcon} ${active === 'about' && styles.active}`}
-            to="/about/arclytics"
+            to={{
+              pathname: '/about/application',
+              state: { from: pathname },
+            }}
           >
             <Tooltip space={12}>
               <FontAwesomeIcon icon={faQuestionCircle} className={styles.icon} size="lg" />
@@ -199,7 +204,11 @@ class AppBar extends React.Component {
             </Tooltip>
           </Link>
 
-          <Logo className={styles.logo} />
+          {
+            theme === 'light'
+              ? <LogoLight className={styles.logo} />
+              : <LogoDark className={styles.logo} />
+          }
         </div>
       </nav>
     )
@@ -214,11 +223,19 @@ AppBar.propTypes = {
   // from connect
   addFlashToastConnect: PropTypes.func.isRequired,
   saveLastSimConnect: PropTypes.func.isRequired,
+  theme: PropTypes.string.isRequired,
+  location: PropTypes.shape({
+    pathname: PropTypes.string,
+  }).isRequired,
 }
+
+const mapStateToProps = state => ({
+  theme: state.self.theme,
+})
 
 const mapDispatchToProps = {
   addFlashToastConnect: addFlashToast,
   saveLastSimConnect: saveLastSim,
 }
 
-export default connect(null, mapDispatchToProps)(AppBar)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AppBar))

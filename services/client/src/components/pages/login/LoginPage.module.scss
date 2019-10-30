@@ -48,17 +48,16 @@ $bg-img: url('../../../assets/login_register_bg.png');
 
   .createAccount{
     color:var(--arc500);
-    text-decoration: none;
   }
 
   .email{
-    margin-bottom: 1.84375rem;
+    margin-bottom: 1.5rem;
     height: 2.25rem;
   }
 
   .password{
-    margin-bottom: 1.625rem;
-    height:2.25rem;
+    margin-bottom: 2rem;
+    height: 2.25rem;
   }
 
   .otherLinks {
@@ -87,7 +86,6 @@ $bg-img: url('../../../assets/login_register_bg.png');
     p:last-of-type { margin-left: 1em; }
 
     .links {
-      text-decoration: none;
       color: var(--n500);
     }
   }
@@ -97,12 +95,8 @@ $bg-img: url('../../../assets/login_register_bg.png');
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
-
-  & > h6{
-    margin-top: .75rem;
-    cursor: pointer;
-    color: var(--arc500);
-  }
+  align-items: center;
+  margin-top: 2.5rem;
 }
 
 .fadeLeftOut{
@@ -125,20 +119,9 @@ $bg-img: url('../../../assets/login_register_bg.png');
   opacity: 0;
   display: flex;
   flex-flow: column;
-  justify-content: space-between;
-  span {
-    margin-bottom: 1rem;
-  }
 
-  .confirmation {
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
-    color: var(--g500);
-  }
-  .errors {
-    color: var(--r400);
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
+  & > span {
+    margin-bottom: 1.5rem;
   }
 }
 
@@ -199,5 +182,5 @@ $bg-img: url('../../../assets/login_register_bg.png');
 }
 
 .header{
-  margin-bottom: 4.375rem;
+  margin-bottom: 2.5rem;
 }

@@ -29,7 +29,6 @@ $break-medium: 1600px;
     align-items: center;
 
     .nerdyDataCard {
-      background-color: var(--n0);
       min-height: 12rem;
       max-height: 15rem;
       margin-top: 1.25rem;
@@ -59,12 +58,10 @@ $break-medium: 1600px;
   }
 
   .map {
-    background-color: var(--n0);
     margin-top: 1.25rem;
     min-height: 35rem;
 
     .mapCard {
-      background-color: var(--n0);
       flex-basis: 90%;
       min-height: 35rem;
       max-height: 42rem;
@@ -90,7 +87,6 @@ $break-medium: 1600px;
     flex-basis: 50%;
 
     .profileCard {
-      background-color: var(--n0);
       z-index: 1;
       position: relative;
       display: flex;

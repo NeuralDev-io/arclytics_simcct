@@ -20,11 +20,14 @@ import Button from '../../elements/button'
 import { removeFlashToast } from '../../../state/ducks/toast/actions'
 
 class Toaster extends React.Component {
-  state = {
-    displayed: [],
+  constructor(props) {
+    super(props)
+    this.state = {
+      displayed: [],
+    }
   }
 
-  storeDisplayed = (key) => {
+  handleStoreDisplayed = (key) => {
     this.setState(({ displayed }) => ({
       displayed: [...displayed, key],
     }))
@@ -42,7 +45,7 @@ class Toaster extends React.Component {
     notifications.forEach((notification) => {
       setTimeout(() => {
         // If notification already displayed, abort
-        if (displayed.indexOf(notification.key) > -1) return
+        if (displayed.includes(notification.key)) return
         // Display notification using notistack
         if (notification.dismissable) {
           enqueueSnackbar(notification.message, {
@@ -59,7 +62,7 @@ class Toaster extends React.Component {
           })
         } else enqueueSnackbar(notification.message, notification.options)
         // Add notification's key to the local state
-        this.storeDisplayed(notification.key)
+        this.handleStoreDisplayed(notification.key)
         // Dispatch action to remove the notification from the redux store
         removeFlashToastConnect(notification.key)
       }, 1)

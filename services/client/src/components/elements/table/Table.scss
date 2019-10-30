@@ -370,7 +370,7 @@
   transition: all 0.3s ease;
   pointer-events: none;
   padding: 20px 10px;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--n600);
 }
 .ReactTable .-loading {
   display: block;

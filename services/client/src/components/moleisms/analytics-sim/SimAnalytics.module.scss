@@ -21,12 +21,10 @@ $break-small: 1366px;
   }
 
   .methodsChart {
-    background-color: var(--n0);
     margin-top: 1.25rem;
     min-height: 24rem;
 
     .chartCard {
-      background-color: var(--n0);
       z-index: 1;
       position: relative;
       display: flex;
@@ -41,12 +39,10 @@ $break-small: 1366px;
   }
 
   .savedAlloysNameChart {
-    background-color: var(--n0);
     margin-top: 1.25rem;
     min-height: 32rem;
 
     .savedAlloysNameCard {
-      background-color: var(--n0);
       flex-basis: 90%;
       min-height: 32rem;
       min-width: 90%;
@@ -61,12 +57,10 @@ $break-small: 1366px;
   }
 
   .chart {
-    background-color: var(--n0);
     margin-top: 1.25rem;
     min-height: 35rem;
 
     .alloysTSNEChart {
-      background-color: var(--n0);
       flex-basis: 90%;
       min-height: 35rem;
       max-height: 42rem;

@@ -1,0 +1,38 @@
+.main {
+  width: 80%;
+  padding-right: 40%;
+  margin: auto;
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+}
+
+.inputHeader {
+  & > h3 {
+    margin-right: 3rem;
+    display: inline-block;
+  }
+
+  & > span.status {
+    font-style: italic;
+  }
+}
+
+.inputRow {
+  margin-bottom: 1rem;
+
+  & > span {
+    width: 7rem;
+  }
+}
+
+.buttonGroup {
+  align-self: flex-end;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+
+  & > Button:last-of-type {
+    margin-left: 1.5rem;
+  }
+}

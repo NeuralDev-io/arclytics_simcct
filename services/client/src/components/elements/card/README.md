@@ -1,8 +1,6 @@
 # Card
 
-TODO(andrew@neuraldev.io): FIX THIS!
-
-**Version:** 0.1.0
+**Version:** 1.0.0
 
 ## Usage
 
@@ -11,17 +9,18 @@ import Card from './card'
 
 export const App = () => (
   <div>
-    <Button
-      appearance="dangerous"
-      onClick={() => console.log("danger!")}
-      length="long"
-    >
-   
-    </Button>
+    <Card>
+      <h5>This is a card</h5>
+      <p>We can put anything inside it.</p>
+    </Card>
   </div>
 )
 ```
 
 ## Card Props
+
+#### `className`: string
+
+To add custom style to the card
 
 ...

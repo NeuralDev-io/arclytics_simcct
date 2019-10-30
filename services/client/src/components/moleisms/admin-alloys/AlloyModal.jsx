@@ -37,9 +37,10 @@ class AlloyModal extends Component {
 
     const { alloy, onChange } = this.props
     // if this element is one of the current elements
+    // aka it's not part of the new elements
     if (!newElements.includes(number)) {
       // remove element from current compositions
-      const newComp = alloy.compositions.filter(elem => elem.name !== element.name)
+      const newComp = alloy.compositions.filter(elem => elem.symbol !== element.symbol)
       onChange({
         ...alloy,
         compositions: newComp,
@@ -48,7 +49,6 @@ class AlloyModal extends Component {
       // else add element to current compositions
       const newComp = alloy.compositions
       newComp.push({
-        name: element.name,
         symbol: element.symbol,
         weight: 0,
       })

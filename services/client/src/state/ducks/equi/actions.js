@@ -16,6 +16,7 @@ import { GET_EQUI_VALUES, RESET_EQUI_VALUES } from './types'
 import { addFlashToast } from '../toast/actions'
 import { SIMCCT_URL } from '../../../constants'
 import { logError } from '../../../api/LoggingHelper'
+import { forceSignIn } from '../redirector/actions'
 
 /**
  * Get the equilibrium values and plot from the simcct microservice via
@@ -58,6 +59,10 @@ export const getEquilibriumValues = () => (dispatch, getState) => {
     }),
   })
     .then((res) => {
+      if (res.status === 401) {
+        forceSignIn()(dispatch)
+        throw new Error('Session expired')
+      }
       if (res.status !== 200) {
         return {
           status: 'fail',

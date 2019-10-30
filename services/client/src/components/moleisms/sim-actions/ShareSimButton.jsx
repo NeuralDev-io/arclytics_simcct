@@ -259,6 +259,7 @@ class ShareSimButton extends Component {
                       value={message}
                       placeholder="Message (optional)"
                       length="stretch"
+                      maxCharacters={250}
                     />
                   </div>
                 </div>

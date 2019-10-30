@@ -1,16 +1,20 @@
-@import '../../../styles/colors.scss';
-
-.root {
-  background-color: var(--n0);
+.card {
   min-height: 20rem;
-  min-width: 45%;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  background-color: var(--n0);
+  padding: 1.5rem 0.75rem 0 0.75rem;
   margin: 0.25rem;
+  border-radius: 6px;
 
-  .content {
-    background-color: var(--n0);
-
-    min-height: 24rem;
-    max-height: 32rem;
-    padding: 1.5rem 0.75rem 0 0.75rem;
-  }
+  display: flex;
+  flex-direction: column;
 }
+
+// experimental theming properties
+//
+// html[data-theme="dark"] {
+//   .card {
+//     background-color: var(--n10);
+//     box-shadow: none;
+//   }
+// }

@@ -8,9 +8,11 @@ import {
   GET_LAST_SIM,
   DELETE_SIM,
 } from './types'
+import { SUPPORTED_THEMES } from '../../../utils/theming'
 
 const initialState = {
   user: {
+    isFetched: false,
     admin: false,
     profile: {
       aim: '',
@@ -18,6 +20,16 @@ const initialState = {
       sci_tech_exp: '',
       phase_transform_exp: '',
     },
+    email: '',
+    first_name: '',
+    last_name: '',
+    active: false,
+    verified: false,
+    last_updated: '',
+    last_login: '',
+    created: '',
+    // when user editing email
+    isEmailUpdating: false,
   },
   savedSimulations: {
     fetched: false,
@@ -25,9 +37,32 @@ const initialState = {
     data: [],
   },
   lastSim: {},
+  // default theme when the app starts is the theme stored in localStorage
+  // if theme in localStorage is invalid then default it to light
+  theme: 'light',
 }
 
-const reducer = (state = initialState, action) => {
+/**
+ * This function gets the theme from localStorage.
+ * If theme is invalid, it sets theme in localStorage to default
+ * as 'light
+ */
+const getStorageTheme = () => {
+  const theme = localStorage.getItem('theme') || ''
+  if (!SUPPORTED_THEMES.includes(theme)) {
+    localStorage.setItem('theme', 'light')
+    return 'light'
+  }
+  return theme
+}
+
+const reducer = (
+  state = {
+    ...initialState,
+    theme: getStorageTheme(),
+  },
+  action,
+) => {
   switch (action.type) {
     case GET_USER_PROFILE:
       return {
@@ -35,6 +70,7 @@ const reducer = (state = initialState, action) => {
         user: {
           ...state.user,
           ...action.payload,
+          isFetched: true,
         },
       }
     case CREATE_USER_PROFILE:
@@ -56,14 +92,37 @@ const reducer = (state = initialState, action) => {
           ...action.payload,
         },
       }
-    case UPDATE_EMAIL:
-      return {
-        ...state,
-        user: {
-          ...state.user,
-          ...action.payload,
-        },
+    case UPDATE_EMAIL: {
+      if (action.status === 'started') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isEmailUpdating: true,
+          },
+        }
       }
+      if (action.status === 'success') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            email: action.payload,
+            isEmailUpdating: false,
+          },
+        }
+      }
+      if (action.status === 'fail') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isEmailUpdating: false,
+          },
+        }
+      }
+      break
+    }
     case SAVE_SIM:
       return {
         ...state,
@@ -123,6 +182,11 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         lastSim: action.payload,
+      }
+    case 'self/CHANGE_THEME':
+      return {
+        ...state,
+        theme: action.payload,
       }
     default:
       return state

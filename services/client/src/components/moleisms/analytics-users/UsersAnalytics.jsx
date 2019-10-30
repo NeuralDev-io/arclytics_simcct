@@ -9,6 +9,7 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUserFriends } from '@fortawesome/pro-light-svg-icons/faUserFriends'
 import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
@@ -19,7 +20,7 @@ import { faSmile } from '@fortawesome/pro-light-svg-icons/faSmile'
 import {
   getProfileAnalyticsData,
   getLoginLocationData,
-  getNerdyStatsData
+  getNerdyStatsData,
 } from '../../../api/Analytics'
 import { logError } from '../../../api/LoggingHelper'
 import { ProfileBarChart, LoginLocationMapbox } from '../charts'
@@ -58,7 +59,7 @@ const colorScale = [
   [0.9, 'rgb(160, 160, 160)'],
 
   [0.9, 'rgb(180, 180, 180)'],
-  [1.0, 'rgb(180, 180, 180)']
+  [1.0, 'rgb(180, 180, 180)'],
 ]
 
 class UsersAnalytics extends Component {
@@ -74,7 +75,7 @@ class UsersAnalytics extends Component {
   }
 
   componentDidMount = () => {
-    this.setState({isLoading: true})
+    this.setState({ isLoading: true })
     this.getNerdyStatsAnalytics()
     this.getProfileAnalytics()
     this.getLoginLocationMap()
@@ -85,10 +86,10 @@ class UsersAnalytics extends Component {
       this.setState({ statsData: res.data })
     })
       .catch((err) => logError(
-          err.toString(),
-          err.message,
-          'UsersAnalytics.getNerdyStatsAnalytics',
-          err.stack
+        err.toString(),
+        err.message,
+        'UsersAnalytics.getNerdyStatsAnalytics',
+        err.stack,
       ))
   }
 
@@ -100,7 +101,7 @@ class UsersAnalytics extends Component {
         err.toString(),
         err.message,
         'UsersAnalytics.getProfileAnalytics',
-        err.stack
+        err.stack,
       ))
   }
 
@@ -117,12 +118,11 @@ class UsersAnalytics extends Component {
         err.toString(),
         err.message,
         'UsersAnalytics.getProfileAnalytics',
-        err.stack
+        err.stack,
       ))
   }
 
   render() {
-
     const {
       statsData,
       profileData,
@@ -130,46 +130,51 @@ class UsersAnalytics extends Component {
       mapboxData,
       isLoading,
     } = this.state
+    const { theme } = this.props
 
     return (
       <div className={styles.container}>
         <h3>Dashboard - All About Users</h3>
 
-        <h5>Some <strike>nerdy stats</strike> numbers about users.</h5>
+        <h5>
+          Some&nbsp;
+          <strike>nerdy stats</strike>
+          &nbsp;numbers about users
+        </h5>
         <div className={styles.nerdyData}>
           <Card className={styles.nerdyDataCard}>
             <FontAwesomeIcon icon={faUserFriends} color={getColor('--r400')} className={styles.cardIcon} />
-            <h5>{(statsData !== undefined) ? statsData.count.users : "0"}</h5>
+            <h5>{(statsData !== undefined) ? statsData.count.users : '0'}</h5>
             <p>Users registered</p>
           </Card>
 
           <Card className={styles.nerdyDataCard}>
             <FontAwesomeIcon icon={faDatabase} color={getColor('--o400')} className={styles.cardIcon} />
-            <h5>{(statsData !== undefined) ? statsData.count.saved_alloys : "0"}</h5>
+            <h5>{(statsData !== undefined) ? statsData.count.saved_alloys : '0'}</h5>
             <p>Saved alloys</p>
           </Card>
 
           <Card className={styles.nerdyDataCard}>
             <FontAwesomeIcon icon={faSave} color={getColor('--t400')} className={styles.cardIcon} />
-            <h5>{(statsData !== undefined) ? statsData.count.saved_simulations : "0"}</h5>
+            <h5>{(statsData !== undefined) ? statsData.count.saved_simulations : '0'}</h5>
             <p>Saved simulations</p>
           </Card>
 
           <Card className={styles.nerdyDataCard}>
             <FontAwesomeIcon icon={faShareAlt} color={getColor('--b400')} className={styles.cardIcon} />
-              <h5>{(statsData !== undefined) ? statsData.count.shared_simulations : "0"}</h5>
-              <p>Shared simulations</p>
+            <h5>{(statsData !== undefined) ? statsData.count.shared_simulations : '0'}</h5>
+            <p>Shared simulations</p>
           </Card>
 
           <Card className={styles.nerdyDataCard}>
             <FontAwesomeIcon icon={faSmile} color={getColor('--i400')} className={styles.cardIcon} />
-            <h5>{(statsData !== undefined) ? statsData.count.ratings : "0"}</h5>
+            <h5>{(statsData !== undefined) ? statsData.count.ratings : '0'}</h5>
             <p>Ratings submitted</p>
           </Card>
 
           <Card className={styles.nerdyDataCard}>
             <FontAwesomeIcon icon={faHeart} color={getColor('--v400')} className={styles.cardIcon} />
-            <h5>{(statsData !== undefined) ? statsData.count.feedback : "0"}</h5>
+            <h5>{(statsData !== undefined) ? statsData.count.feedback : '0'}</h5>
             <p>Feedback given</p>
           </Card>
         </div>
@@ -186,7 +191,7 @@ class UsersAnalytics extends Component {
               <LoginLocationMapbox
                 // Other options include: Electric, Viridis, Hot, Jet, YIGnBu, YIOrRd, Picnic
                 colorScale={(mapboxData !== undefined) ? 'YIGnBu' : colorScale}
-                mapBoxStyle={'light'}  // Can also pass in 'dark' for dark mode.
+                mapBoxStyle={theme} // Can also pass in 'dark' for dark mode.
                 isLoading={isLoading}
                 token={mapboxToken}
                 data={(mapboxData !== undefined) ? mapboxData : undefined}
@@ -248,6 +253,12 @@ class UsersAnalytics extends Component {
   }
 }
 
-// UsersAnalytics.propTypes = {}
+UsersAnalytics.propTypes = {
+  theme: PropTypes.string.isRequired,
+}
 
-export default UsersAnalytics
+const mapStateToProps = (state) => ({
+  theme: state.self.theme,
+})
+
+export default connect(mapStateToProps, {})(UsersAnalytics)

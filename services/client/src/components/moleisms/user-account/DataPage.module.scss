@@ -5,3 +5,25 @@
   flex-flow: column;
   justify-content: flex-start;
 }
+
+.downloadP {
+  margin-bottom: 1.25rem;
+}
+
+.deleteGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  & > p {
+    margin-right: 2.5rem;
+  }
+}
+
+.btn {
+  margin-bottom: 3.5rem;
+}
+
+.deleteButton {
+  width: 13rem;
+}

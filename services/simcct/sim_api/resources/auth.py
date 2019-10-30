@@ -22,9 +22,11 @@ import os
 from datetime import datetime
 from typing import Tuple
 from pathlib import Path
+from copy import deepcopy
 
 import geoip2
 import geoip2.database
+from bson import ObjectId
 from email_validator import EmailNotValidError
 from flask import (
     Blueprint, jsonify, redirect, render_template, request, session
@@ -41,7 +43,7 @@ from sim_api.extensions.utilities import (
     URLTokenError, URLTokenExpired, arc_validate_email
 )
 from sim_api.middleware import (authenticate_user_and_cookie_flask)
-from sim_api.models import LoginData, User
+from sim_api.models import LoginData, User, SharedSimulation
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
@@ -594,13 +596,8 @@ def change_password(user) -> Tuple[dict, int]:
 
     # validate the old password first because we want to ensure we have the
     # right user.
-    old_password = request_data.get('password', None)
     new_password = request_data.get('new_password', None)
     confirm_password = request_data.get('confirm_password', None)
-
-    if not old_password:
-        response['message'] = 'Must provide the current password.'
-        return jsonify(response), 401
 
     if not new_password or not confirm_password:
         response['message'] = 'Must provide a password and confirm password.'
@@ -619,37 +616,31 @@ def change_password(user) -> Tuple[dict, int]:
         response['message'] = 'User needs to verify account.'
         return jsonify(response), 401
 
-    if bcrypt.check_password_hash(user.password, old_password):
-        user.set_password(new_password)
-        user.save()
+    user.set_password(new_password)
+    user.save()
 
-        # The email to notify users.
-        from sim_api.email_service import send_email
-        send_email(
-            to=[user.email],
-            subject_suffix='Your Arclytics Sim password has been changed',
-            html_template=render_template(
-                'change_password.html',
-                change_datetime=datetime.utcnow().isoformat(),
-                email=user.email,
-                user_name=f'{user.first_name} {user.last_name}'
-            ),
-            text_template=render_template(
-                'change_password.txt',
-                change_datetime=datetime.utcnow().isoformat(),
-                email=user.email,
-                user_name=f'{user.first_name} {user.last_name}'
-            )
+    # The email to notify users.
+    from sim_api.email_service import send_email
+    send_email(
+        to=[user.email],
+        subject_suffix='Your Arclytics Sim password has been changed',
+        html_template=render_template(
+            'change_password.html',
+            change_datetime=datetime.utcnow().isoformat(),
+            email=user.email,
+            user_name=f'{user.first_name} {user.last_name}'
+        ),
+        text_template=render_template(
+            'change_password.txt',
+            change_datetime=datetime.utcnow().isoformat(),
+            email=user.email,
+            user_name=f'{user.first_name} {user.last_name}'
         )
+    )
 
-        response['status'] = 'success'
-        response['message'] = 'Successfully changed password.'
-        return jsonify(response), 200
-
-    response['message'] = 'Password is not correct.'
-    logger.info({'email': user.email, 'message': response['message']})
-    apm.capture_message(response['message'])
-    return jsonify(response), 401
+    response['status'] = 'success'
+    response['message'] = 'Successfully changed password.'
+    return jsonify(response), 200
 
 
 @auth_blueprint.route(Routes.change_email.value, methods=['PUT'])
@@ -927,7 +918,7 @@ def login() -> any:
 def logout(_) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
     # Save the session ID for later
-    sid = session.sid
+    sid = deepcopy(session.sid)
 
     # Ensure we remove the JWT from the session dict.
     session.pop('jwt')
@@ -975,3 +966,57 @@ def get_user_status(user) -> Tuple[dict, int]:
         "admin": user.is_admin,
     }
     return jsonify(response), 200
+
+
+@auth_blueprint.route(Routes.delete_user, methods=['DELETE'])
+@authenticate_user_and_cookie_flask
+def delete_user(user) -> Tuple[dict, int]:
+    """This method deletes a User's document and all documents that are
+    referenced to the user. It further deletes all other documents that are
+    created by the user.
+
+    Args:
+        user: a `sim_api.models.User` instance passed from the middleware.
+
+    Returns:
+        A valid HTTP response and status code.
+    """
+
+    # Store these so we can delete documents related to this user.
+    # oid = ObjectId(deepcopy(user.id))
+    email = deepcopy(user.email)
+
+    # Due to the ReferenceField used in the `sim_api.model.Feedback`
+    # and `sim_api.models.SavedSimulation` being set with
+    # `on_delete_rule=mongoengine.CASCADE`, doing this will also delete those
+    # documents in those collections.
+    user.delete()
+
+    # Delete Shared Simulations
+    SharedSimulation.objects(owner_email=email).delete()
+
+    # Delete the cookie from the response
+    sid = deepcopy(session.sid)
+    # Ensure we remove the JWT from the session dict.
+    session.pop('jwt')
+    # Remove the data from the user's current session.
+    session.clear()
+    # Remove the session stored in Redis so that the next time the user
+    # tries to use an endpoint with a deleted cookie, there will be no
+    # Redis value returned and they will need to have a new session created.
+
+    # Grab the exposed RedisSessionInterface instance exposed.
+    r_sess_interface = redis_session.interface
+    # Get the Redis connection stored in the instance
+    redis = r_sess_interface.redis
+    # We need to include the prefix that we use to store the Session in Redis
+    redis_session_key = r_sess_interface.redis_key(sid)
+    # Delete the Redis storage to ensure the cookie is not valid anymore
+    try:
+        redis.delete(redis_session_key)
+    except ReadOnlyError:
+        logger.exception('Redis read error in logout.')
+        apm.capture_exception()
+        redis.connection_pool.reset()
+
+    return {}, 204

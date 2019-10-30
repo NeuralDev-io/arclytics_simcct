@@ -25,7 +25,7 @@ from typing import Tuple, Union
 from bson import ObjectId
 from flask import current_app, json
 from mongoengine import (
-    BooleanField, DO_NOTHING, DateTimeField, DictField, Document, EmailField,
+    BooleanField, CASCADE, DateTimeField, DictField, Document, EmailField,
     EmbeddedDocument, EmbeddedDocumentField, EmbeddedDocumentListField,
     FloatField, IntField, ObjectIdField, ReferenceField, StringField,
     LongField, PointField, ValidationError, queryset_manager
@@ -626,7 +626,7 @@ class User(Document):
 
 
 class SavedSimulation(Document):
-    user = ReferenceField(User, reverse_delete_rule=DO_NOTHING)
+    user = ReferenceField(User, reverse_delete_rule=CASCADE)
     configurations = EmbeddedDocumentField(
         document_type=Configuration, required=True, null=False
     )
@@ -679,7 +679,7 @@ class SharedSimulation(Document):
 
 
 class Feedback(Document):
-    user = ReferenceField(User, reverse_delete_rule=DO_NOTHING)
+    user = ReferenceField(User, reverse_delete_rule=CASCADE)
     category = StringField(required=True)
     rating = IntField(min_value=1, max_value=5, default=None)
     comment = StringField(required=True)

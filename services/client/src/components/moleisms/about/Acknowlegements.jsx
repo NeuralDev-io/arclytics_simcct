@@ -133,19 +133,80 @@ class Acknowledgements extends React.PureComponent {
             </li>
             <li value="9">Abaqus. 2018, Dassault Systèmes -SIMULIA.</li>
             <li value="10">
+              Zener, C.J.T.A., Kinetics of the decomposition of austenite.
+              1946. 167(1946): p. 550-595.
+            </li>
+            <li value="11">
+              Hillert, M.J.J.A., The role of interfacial energy during
+              solid-state phase transformations. 1957. 141: p. 757-789.
+            </li>
+            <li value="12">
+              Scheil, E.J.A.E., Nucleation period of austenite transformation.
+              1935. 12: p. 565-567.
+            </li>
+            <li value="13">
+              Watt, D., et al., An algorithm for modelling microstructural
+              development in weld heataffected zones (part A) reaction kinetics.
+              Acta Metallurgica, 1988. 36(11): p. 3029-3035.
+            </li>
+            <li value="14">
+              Gorni, A.A.J.S.V., Brazil, Steel forming and heat treating
+              handbook. 2011. 24.
+            </li>
+            <li value="15">
+              Andrews, K.W., Empirical Formulae for the Calculation of Some
+              Transformation Temperatures. Journal of the Iron and Steel
+              Institute, 1965. 203: p. 721-727.
+            </li>
+            <li value="16">
+              Barralis, J. and G. Maeder, Métallurgie Tome I: Métallurgie
+              Physique, in Collection Scientifique ENSAM. 1982. p. 270.
+            </li>
+            <li value="17">
+              Grange, R.A., Estimating Critical Ranges in Heat Treatment of
+              Steel. Metal Progress, 1961. 79(4): p. 73-75.
+            </li>
+            <li value="18">
+              Sugden, A. and H. Bhadeshia, Thermodynamic estimation of
+              liquidus, solidus Ae 3 temperatures, and phase compositions for
+              low alloy multicomponent steels. Materials science and technology,
+              1989. 5(10): p. 977-984.
+            </li>
+            <li value="19">
+              Steven, W.J.J.o.t.I. and S. Institute, The temperature of
+              formation of martensite and bainite in low alloy steels, some
+              effects of chemical composition. 1956. 183: p. 349-359.
+            </li>
+            <li value="20">
+              Kung, C.Y. and J.J. Rayment, An examination of the validity of
+              existing formulae for the calculation of Ms temperatures.
+              Metallurgical transactions A, 1982. 13A: p. 328-331.
+            </li>
+            <li value="21">
+              Koıstinen, D. and R.J.A.M. Marbürger, A General Equation
+              Prescribing Extent of Austenite- Martensite Transformation in Pure
+              Fe-C Alloy and Plain Carbon Steels. 1959. 7(1): p. 59-60.
+            </li>
+            <li value="22">
+              Van Bohemen, S., J.J.M.S. Sietsma, and Technology, Kinetics of
+              martensite formation in plain carbon steels: critical assessment
+              of possible influence of austenite grain boundaries and
+              autocatalysis. 2014. 30(9): p. 1024-1033.
+            </li>
+            <li value="23">
+              Standard, A., AS 1733-1976, Method for the Determination of Grain
+              Size in Metals, in Method for the Determination of Grain Size in
+              Metals. 1976.
+            </li>
+            <li value="24">
               Ikawa, H., H. Oshige, and S. Noi, Austenite Grain Growth of Steel
               in Weld-Heat Affected Zone. Transactions of the Japan Welding
               Society, 1977. 8(2): p. 132-137.
             </li>
-            <li value="11">
+            <li value="25">
               Ikawa, H., et al., Austenite Grain Growth of Steels during Thermal
               Cycles. Transactions of the Japan Welding Society, 1977. 8(2): p.
               126-131.
-            </li>
-            <li value="12">
-              Koıstinen, D. and R.J.A.M. Marbürger, A General Equation
-              Prescribing Extent of Austenite- Martensite Transformation in Pure
-              Fe-C Alloy and Plain Carbon Steels. 1959. 7(1): p. 59-60.
             </li>
           </ol>
         </section>

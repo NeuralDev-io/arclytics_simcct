@@ -82,7 +82,7 @@ class SecureConfirmModal extends Component {
               appearance="text"
               // length="long"
               className={styles.confirmBtn}
-              color="dangerous"
+              color={isDangerous ? 'dangerous' : 'default'}
               isDisabled={password === ''}
             >
               {actionButtonName}

@@ -349,6 +349,7 @@ class ManageUsers extends Component {
           actionButtonName={statusIsActive ? 'Deactivate' : 'Activate'}
           onSubmit={() => this.handleStatusSubmit(statusEmail, statusIsActive)}
           onClose={() => this.setState({ showStatusModal: false })}
+          isDangerous
         />
       </div>
     )

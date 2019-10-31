@@ -53,9 +53,11 @@ const LoginLocationMapbox = ({
 
   if (traceData.length === 0) {
     if (isLoading) {
-      return <div className={styles.noData}>
-        <InlineSpinner />
-      </div>
+      return (
+        <div className={styles.noData}>
+          <InlineSpinner size="lg" />
+        </div>
+      )
     }
     return <div className={styles.noData}>No data.</div>
   }

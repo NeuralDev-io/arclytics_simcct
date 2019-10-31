@@ -1,1 +1,1 @@
-export { InlineSpinner, PageSpinner } from './Spinner'
+export { default as InlineSpinner } from './Spinner'

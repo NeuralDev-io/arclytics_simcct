@@ -85,7 +85,7 @@ class LiveLoginTimeSeries extends Component {
       if (isLoading) {
         return (
           <div className={styles.noData}>
-            <InlineSpinner />
+            <InlineSpinner size="lg" />
           </div>
         )
       }

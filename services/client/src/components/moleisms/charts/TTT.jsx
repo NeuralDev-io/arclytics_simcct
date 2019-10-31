@@ -108,7 +108,7 @@ const TTT = ({ data, isLoading, startTemp }) => {
     if (isLoading) {
       return (
         <div className={styles.noData}>
-          <InlineSpinner />
+          <InlineSpinner size="lg" />
         </div>
       )
     }

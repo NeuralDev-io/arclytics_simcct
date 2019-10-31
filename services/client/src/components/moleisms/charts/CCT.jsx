@@ -151,7 +151,7 @@ const CCT = ({
     if (isLoading) {
       return (
         <div className={styles.noData}>
-          <InlineSpinner />
+          <InlineSpinner size="lg" />
         </div>
       )
     }

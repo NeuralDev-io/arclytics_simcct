@@ -11,10 +11,10 @@ __license__ = 'MIT'
 __version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.10.15'
-"""app_analytics.py: 
+"""app_analytics.py:
 
-This module provides the resources for analytical querying, manipulation and 
-transformations to display interesting data about the application itself. 
+This module provides the resources for analytical querying, manipulation and
+transformations to display interesting data about the application itself.
 """
 
 from os import environ as env

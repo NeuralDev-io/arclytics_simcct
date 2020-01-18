@@ -240,3 +240,4 @@ services/simcct/simulation/
 services/client/.npmrc
 
 services/db/production_data/
+services/simcct/arc_simulation/

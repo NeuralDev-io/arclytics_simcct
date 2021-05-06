@@ -5,7 +5,7 @@ elastic-apm[flask]==5.1.2
 email-validator==1.0.4
 Flask-Bcrypt==0.7.1
 flask-caching==1.7.2
-Flask-Cors==3.0.7
+Flask-Cors==3.0.9
 Flask-RESTful==0.3.7
 Flask-Testing==0.7.1
 fluent-logger==0.9.3

@@ -3,7 +3,7 @@ coverage==4.5.3
 elastic-apm[flask]==5.1.2
 Flask-Bcrypt==0.7.1
 Flask-Caching==1.7.2
-Flask-Cors==3.0.7
+Flask-Cors==3.0.9
 flask-redis==0.4.0
 Flask-RESTful==0.3.7
 Flask-Testing==0.7.1

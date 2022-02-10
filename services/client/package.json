@@ -28,7 +28,7 @@
     "eslint-plugin-react-hooks": "1.7.0",
     "file-saver": "2.0.2",
     "formik": "1.5.7",
-    "node-sass": "4.12.0",
+    "node-sass": "7.0.0",
     "notistack": "0.8.9",
     "plotly.js": "1.49.1",
     "prop-types": "15.7.2",
